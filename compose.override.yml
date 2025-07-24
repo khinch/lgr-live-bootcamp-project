@@ -1,7 +1,17 @@
 services:
+  nginx:
+    image: nginx:latest
+    restart: always
+    ports:
+      - "5000:80"
+    volumes:
+      - ./nginx.local.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - app-service
+      - auth-service
   app-service:
     build:
-      context: ./app-service # specify directory where local Dockerfile is located
+      context: ./app-service
   auth-service:
     build:
-      context: ./auth-service # specify directory where local Dockerfile is located
+      context: ./auth-service
