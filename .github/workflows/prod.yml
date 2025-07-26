@@ -85,6 +85,8 @@ jobs:
         run: sshpass -v -p '${{ secrets.DROPLET_PASSWORD }}' scp -o StrictHostKeyChecking=no compose.yml root@${{ vars.DROPLET_IP }}:~
       - name: Copy nginx.conf to droplet
         run: sshpass -v -p '${{ secrets.DROPLET_PASSWORD }}' scp -o StrictHostKeyChecking=no nginx.conf root@${{ vars.DROPLET_IP }}:~
+      - name: Copy init-letsencrypt.sh to droplet
+        run: sshpass -v -p '${{ secrets.DROPLET_PASSWORD }}' scp -o StrictHostKeyChecking=no init-letsencrypt.sh root@${{ vars.DROPLET_IP }}:~
 
       - name: Deploy
         uses: appleboy/ssh-action@master
@@ -97,4 +99,6 @@ jobs:
             export AUTH_SERVICE_IP=${{ vars.DROPLET_IP }}
             docker compose down
             docker compose pull
+            chmod +x init-letsencrypt.sh
+            ./init-letsencrypt.sh
             docker compose up -d
