@@ -1,5 +1,5 @@
 use crate::helpers::{get_random_email, TestApp};
-use auth_service::routes::SignupResponse;
+use auth_service::{routes::SignupResponse, ErrorResponse};
 
 #[tokio::test]
 async fn should_return_422_if_malformed_input() {
@@ -44,12 +44,12 @@ async fn should_return_201_for_valid_requests() {
     let test_cases = [
         serde_json::json!({
             "email": get_random_email(),
-            "password": "password123",
+            "password": "abcd1234",
             "requires2FA": true
         }),
         serde_json::json!({
             "email": get_random_email(),
-            "password": "password123",
+            "password": "abcd1234",
             "requires2FA": false
         }),
     ];
@@ -75,4 +75,80 @@ async fn should_return_201_for_valid_requests() {
             expected_response
         );
     }
+}
+
+#[tokio::test]
+async fn should_return_400_if_invalid_input() {
+    let app = TestApp::new().await;
+
+    let test_cases = [
+        serde_json::json!({
+            "email": "foobar.com",
+            "password": "abcd1234",
+            "requires2FA": true
+        }),
+        serde_json::json!({
+            "email": "",
+            "password": "abcd1234",
+            "requires2FA": true
+        }),
+        serde_json::json!({
+            "email": "a@b.com",
+            "password": "abcd123",
+            "requires2FA": true
+        }),
+    ];
+
+    for test_case in test_cases.iter() {
+        let response = app.post_signup(&test_case).await;
+        assert_eq!(
+            response.status().as_u16(),
+            400,
+            "Should fail with HTTP400 for input: {}",
+            test_case
+        );
+        assert_eq!(
+            response
+                .json::<ErrorResponse>()
+                .await
+                .expect("Could not deserialise response body to ErrorResponse")
+                .error,
+            "Invalid credentials".to_owned()
+        );
+    }
+}
+
+#[tokio::test]
+async fn should_return_409_if_email_exists() {
+    let app = TestApp::new().await;
+    let email = get_random_email();
+
+    let request_data = serde_json::json!({
+        "email": email,
+        "password": "abcd1234",
+        "requires2FA": true
+    });
+
+    let response = app.post_signup(&request_data).await;
+    assert_eq!(
+        response.status().as_u16(),
+        201,
+        "Should return 201 for new account created with data: {}",
+        request_data
+    );
+
+    let response = app.post_signup(&request_data).await;
+    assert_eq!(
+        response.status().as_u16(),
+        409,
+        "Should fail with HTTP409 (account with email already exists)"
+    );
+    assert_eq!(
+        response
+            .json::<ErrorResponse>()
+            .await
+            .expect("Could not deserialise response body to ErrorResponse")
+            .error,
+        "User already exists".to_owned()
+    );
 }
