@@ -1,22 +1,15 @@
 use std::collections::HashMap;
 
-use crate::domain::User;
-
-#[derive(Debug, PartialEq)]
-pub enum UserStoreError {
-    UserAlreadyExists,
-    UserNotFound,
-    InvalidCredentials,
-    UnexpectedError,
-}
+use crate::domain::{User, UserStore, UserStoreError};
 
 #[derive(Default)]
 pub struct HashmapUserStore {
     users: HashMap<String, User>,
 }
 
-impl HashmapUserStore {
-    pub fn add_user(&mut self, user: User) -> Result<(), UserStoreError> {
+#[async_trait::async_trait]
+impl UserStore for HashmapUserStore {
+    async fn add_user(&mut self, user: User) -> Result<(), UserStoreError> {
         let email = &user.email;
 
         if self.users.contains_key(email) {
@@ -27,7 +20,7 @@ impl HashmapUserStore {
         Ok(())
     }
 
-    pub fn get_user(&self, email: &str) -> Result<User, UserStoreError> {
+    async fn get_user(&self, email: &str) -> Result<User, UserStoreError> {
         match self.users.get(email) {
             Some(user) => Ok(User::new(
                 user.email.clone(),
@@ -38,8 +31,8 @@ impl HashmapUserStore {
         }
     }
 
-    pub fn validate_user(&self, email: &str, password: &str) -> Result<(), UserStoreError> {
-        let user = self.get_user(email)?;
+    async fn validate_user(&self, email: &str, password: &str) -> Result<(), UserStoreError> {
+        let user = self.get_user(email).await?;
         if password.eq(&user.password) {
             Ok(())
         } else {
@@ -69,13 +62,13 @@ mod tests {
 
         for test_user in get_test_users() {
             assert_eq!(
-                users.add_user(test_user.clone()),
+                users.add_user(test_user.clone()).await,
                 Ok(()),
                 "Failed to add user: {:?}",
                 &test_user
             );
             assert_eq!(
-                users.add_user(test_user.clone()),
+                users.add_user(test_user.clone()).await,
                 Err(UserStoreError::UserAlreadyExists),
                 "Should not be able to add user with duplicate email"
             );
@@ -87,10 +80,10 @@ mod tests {
         let mut users = HashmapUserStore::default();
 
         for test_user in get_test_users() {
-            users.add_user(test_user.clone()).unwrap();
+            users.add_user(test_user.clone()).await.unwrap();
 
             assert_eq!(
-                users.get_user(&test_user.email),
+                users.get_user(&test_user.email).await,
                 Ok(test_user.clone()),
                 "Failed to get user with email: {:?}",
                 &test_user.email
@@ -98,7 +91,7 @@ mod tests {
         }
 
         assert_eq!(
-            users.get_user("no@email.com"),
+            users.get_user("no@email.com").await,
             Err(UserStoreError::UserNotFound),
             "User should not exist"
         );
@@ -118,22 +111,23 @@ mod tests {
                 String::from(valid_password),
                 true,
             ))
+            .await
             .unwrap();
 
         assert_eq!(
-            users.validate_user(valid_email, valid_password),
+            users.validate_user(valid_email, valid_password).await,
             Ok(()),
             "User should exist with a valid password"
         );
 
         assert_eq!(
-            users.validate_user(invalid_email, valid_password),
+            users.validate_user(invalid_email, valid_password).await,
             Err(UserStoreError::UserNotFound),
             "User should not exist"
         );
 
         assert_eq!(
-            users.validate_user(valid_email, invalid_password),
+            users.validate_user(valid_email, invalid_password).await,
             Err(UserStoreError::InvalidCredentials),
             "User credentials should be invalid"
         );
