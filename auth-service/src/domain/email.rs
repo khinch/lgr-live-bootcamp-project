@@ -1,7 +1,7 @@
 use core::convert::AsRef;
 use validator::ValidationError;
 
-#[derive(Debug, PartialEq, Eq, Hash)]
+#[derive(Debug, PartialEq)]
 pub struct Email(String);
 
 impl Email {
