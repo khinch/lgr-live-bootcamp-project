@@ -1,12 +1,12 @@
 use validator::ValidationError;
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Password(String);
 
 impl Password {
-    pub fn parse(password: &str) -> Result<Self, ValidationError> {
-        match validate_password(password) {
-            Ok(()) => Ok(Password(String::from(password))),
+    pub fn parse(password: String) -> Result<Self, ValidationError> {
+        match validate_password(&password) {
+            Ok(()) => Ok(Password(password)),
             Err(message) => {
                 let mut error = ValidationError::new("Invalid password");
                 error.message = Some(message.into());
@@ -58,7 +58,7 @@ mod tests {
             "☀☁☂☃☄★☆☇☈☉☊☋☌☍☎☏☐☑☒☓☔☕ħĨ☘☙☚☛☜☝☞☟☠☡☢☣ĩ☥☦☧☨☩☪☫☬☭☮☯☰☱☲☳☴☵☶☷☸☹☺☻☼☽☾☿",
         ];
         for valid_password in valid_passwords.iter() {
-            let parsed = Password::parse(valid_password).expect(valid_password);
+            let parsed = Password::parse(valid_password.to_string()).expect(valid_password);
             assert_eq!(&parsed.as_ref(), valid_password);
         }
     }
@@ -67,7 +67,7 @@ mod tests {
     fn test_short_passwords() {
         let short_passwords = ["1234567", "😀😁😂😃😄😅😆"];
         for short_password in short_passwords.iter() {
-            let result = Password::parse(short_password);
+            let result = Password::parse(short_password.to_string());
             let error = result.expect_err(short_password);
             assert_eq!(error.code, "Invalid password");
             assert!(error.message.unwrap().starts_with("Too short"));
@@ -81,7 +81,7 @@ mod tests {
             "☀☁☂☃☄★☆☇☈☉☊☋☌☍☎☏☐☑☒☓☔☕ħĨ☘☙☚☛☜☝☞☟☠☡☢☣ĩ☥☦☧☨☩☪☫☬☭☮☯☰☱☲☳☴☵☶☷☸☹☺☻☼☽☾☿♀",
         ];
         for long_password in long_passwords.iter() {
-            let result = Password::parse(long_password);
+            let result = Password::parse(long_password.to_string());
             let error = result.expect_err(long_password);
             assert_eq!(error.code, "Invalid password");
             assert!(error.message.unwrap().starts_with("Too long"));

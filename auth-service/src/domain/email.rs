@@ -1,19 +1,18 @@
 use core::convert::AsRef;
 use validator::ValidationError;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone, Eq, Hash)]
 pub struct Email(String);
 
 impl Email {
-    pub fn parse(email: &str) -> Result<Self, ValidationError> {
-        if !validator::validate_email(email) {
-            // return Err(ValidationError::new("Invalid email address. For more details, see the spec: https://html.spec.whatwg.org/multipage/input.html#valid-e-mail-address"));
+    pub fn parse(email: String) -> Result<Self, ValidationError> {
+        if !validator::validate_email(&email) {
             let mut error = ValidationError::new("Invalid email address");
             error.message = Some("For more details, see the spec: https://html.spec.whatwg.org/multipage/input.html#valid-e-mail-address".into());
             return Err(error);
         }
 
-        Ok(Email(String::from(email)))
+        Ok(Email(email))
     }
 }
 
@@ -38,7 +37,7 @@ mod tests {
     fn test_valid_emails() {
         let valid_emails = ["a@b", "foo@bar.com"];
         for valid_email in valid_emails.iter() {
-            let parsed = Email::parse(valid_email).expect(valid_email);
+            let parsed = Email::parse(valid_email.to_string()).expect(valid_email);
             assert_eq!(
                 &parsed.as_ref(),
                 valid_email,
@@ -51,7 +50,7 @@ mod tests {
     fn test_invalid_emails() {
         let invalid_emails = ["ab.com", "foo.bar"];
         for invalid_email in invalid_emails.iter() {
-            let result = Email::parse(invalid_email);
+            let result = Email::parse(invalid_email.to_string());
             let error = result.expect_err(invalid_email);
             assert_eq!(error.code, "Invalid email address");
             assert_eq!(error.message.unwrap(), "For more details, see the spec: https://html.spec.whatwg.org/multipage/input.html#valid-e-mail-address");
