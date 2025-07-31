@@ -1,0 +1,887 @@
+{
+	"info": {
+		"_postman_id": "9bec568d-ec63-4de9-84bc-61f04cdeca40",
+		"name": "LGR",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "46962547",
+		"_collection_link": "https://kieren-31a841a7-839654.postman.co/workspace/kieren-31a841a7's-Workspace~ca555c18-bc63-4d68-8955-27bded11bf10/collection/46962547-9bec568d-ec63-4de9-84bc-61f04cdeca40?action=share&source=collection_link&creator=46962547"
+	},
+	"item": [
+		{
+			"name": "Auth Service",
+			"item": [
+				{
+					"name": "UI (root)",
+					"item": [
+						{
+							"name": "GET /",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 200\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{protocol}}://{{base_url}}/{{auth_service_path}}/",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"{{auth_service_path}}",
+										""
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Signup",
+					"item": [
+						{
+							"name": "POST Signup - Success - Lower Password Boundary",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"let uuid = require('uuid');",
+											"let email = `${uuid.v4()}@testwebsitepleaseignore.uk`;",
+											"pm.environment.set(\"random_email\", email);",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 201\", function () {",
+											"    pm.response.to.have.status(201); ",
+											"});",
+											"",
+											"pm.test(\"Response message is correct\", function () {",
+											"    const jsonData = pm.response.json();",
+											"    pm.expect(jsonData.message).to.eql('User created successfully');",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"email\": \"{{random_email}}\",\n    \"password\": \"password\",\n    \"requires2FA\": true\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{protocol}}://{{base_url}}/{{auth_service_path}}/signup",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"{{auth_service_path}}",
+										"signup"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "POST Signup - Success - Upper Password Boundary",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"let uuid = require('uuid');",
+											"let email = `${uuid.v4()}@testwebsitepleaseignore.uk`;",
+											"",
+											"let bodyData = JSON.parse(pm.request.body.raw);",
+											"bodyData.email = email;",
+											"pm.request.body.raw = JSON.stringify(bodyData);",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 201\", function () {",
+											"    pm.response.to.have.status(201); ",
+											"});",
+											"",
+											"pm.test(\"Response message is correct\", function () {",
+											"    const jsonData = pm.response.json();",
+											"    pm.expect(jsonData.message).to.eql('User created successfully');",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"email\": \"set by script\",\n    \"password\": \"1234567890123456789012345678901234567890123456789012345678901234\",\n    \"requires2FA\": false\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{protocol}}://{{base_url}}/{{auth_service_path}}/signup",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"{{auth_service_path}}",
+										"signup"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "POST Signup - Error - Duplicate",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 409\", function () {",
+											"    pm.response.to.have.status(409); ",
+											"});",
+											"",
+											"pm.test(\"Response message is correct\", function () {",
+											"    const jsonData = pm.response.json();",
+											"    pm.expect(jsonData.error).to.eql('User already exists');",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"email\": \"{{random_email}}\",\n    \"password\": \"password\",\n    \"requires2FA\": true\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{protocol}}://{{base_url}}/{{auth_service_path}}/signup",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"{{auth_service_path}}",
+										"signup"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "POST Signup - Error - No Email",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 422\", function () {",
+											"    pm.response.to.have.status(422); ",
+											"});",
+											"",
+											"pm.test(\"Response message is correct\", function () {",
+											"    const message = pm.response.text();",
+											"    pm.expect(message).to.eql('Failed to deserialize the JSON body into the target type: missing field `email` at line 4 column 1');",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"password\": \"password\",\n    \"requires2FA\": true\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{protocol}}://{{base_url}}/{{auth_service_path}}/signup",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"{{auth_service_path}}",
+										"signup"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "POST Signup - Error - No Password",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 422\", function () {",
+											"    pm.response.to.have.status(422); ",
+											"});",
+											"",
+											"pm.test(\"Response message is correct\", function () {",
+											"    const message = pm.response.text();",
+											"    pm.expect(message).to.eql('Failed to deserialize the JSON body into the target type: missing field `password` at line 4 column 1');",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"email\": \"{{random_email}}\",\n    \"requires2FA\": true\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{protocol}}://{{base_url}}/{{auth_service_path}}/signup",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"{{auth_service_path}}",
+										"signup"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "POST Signup - Error - No 2FA",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 422\", function () {",
+											"    pm.response.to.have.status(422); ",
+											"});",
+											"",
+											"pm.test(\"Response message is correct\", function () {",
+											"    const message = pm.response.text();",
+											"    pm.expect(message).to.eql('Failed to deserialize the JSON body into the target type: missing field `requires2FA` at line 4 column 1');",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"email\": \"{{random_email}}\",\n    \"password\": \"password\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{protocol}}://{{base_url}}/{{auth_service_path}}/signup",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"{{auth_service_path}}",
+										"signup"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "POST Signup - Error - Invalid Email",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 400\", function () {",
+											"    pm.response.to.have.status(400); ",
+											"});",
+											"",
+											"pm.test(\"Response message is correct\", function () {",
+											"    const jsonData = pm.response.json();",
+											"    pm.expect(jsonData.error).to.eql('Invalid credentials');",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"email\": \"foobar.com\",\n    \"password\": \"password\",\n    \"requires2FA\": true\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{protocol}}://{{base_url}}/{{auth_service_path}}/signup",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"{{auth_service_path}}",
+										"signup"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "POST Signup - Error - Short Password",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"let uuid = require('uuid');",
+											"let email = `${uuid.v4()}@testwebsitepleaseignore.uk`;",
+											"",
+											"let bodyData = JSON.parse(pm.request.body.raw);",
+											"bodyData.email = email;",
+											"pm.request.body.raw = JSON.stringify(bodyData);"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 400\", function () {",
+											"    pm.response.to.have.status(400); ",
+											"});",
+											"",
+											"pm.test(\"Response message is correct\", function () {",
+											"    const jsonData = pm.response.json();",
+											"    pm.expect(jsonData.error).to.eql('Invalid credentials');",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"email\": \"set by script\",\n    \"password\": \"1234567\",\n    \"requires2FA\": true\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{protocol}}://{{base_url}}/{{auth_service_path}}/signup",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"{{auth_service_path}}",
+										"signup"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "POST Signup - Error - Long Password",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"let uuid = require('uuid');",
+											"let email = `${uuid.v4()}@testwebsitepleaseignore.uk`;",
+											"",
+											"let bodyData = JSON.parse(pm.request.body.raw);",
+											"bodyData.email = email;",
+											"pm.request.body.raw = JSON.stringify(bodyData);"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 400\", function () {",
+											"    pm.response.to.have.status(400); ",
+											"});",
+											"",
+											"pm.test(\"Response message is correct\", function () {",
+											"    const jsonData = pm.response.json();",
+											"    pm.expect(jsonData.error).to.eql('Invalid credentials');",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"email\": \"set by script\",\n    \"password\": \"12345678901234567890123456789012345678901234567890123456789012345\",\n    \"requires2FA\": true\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{protocol}}://{{base_url}}/{{auth_service_path}}/signup",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"{{auth_service_path}}",
+										"signup"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Login",
+					"item": [
+						{
+							"name": "POST Login",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 200\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "{{protocol}}://{{base_url}}/{{auth_service_path}}/login",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"{{auth_service_path}}",
+										"login"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Verify 2FA",
+					"item": [
+						{
+							"name": "POST Verify 2FA",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 200\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "{{protocol}}://{{base_url}}/{{auth_service_path}}/verify-2fa",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"{{auth_service_path}}",
+										"verify-2fa"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Verify Token",
+					"item": [
+						{
+							"name": "POST Verify Token",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 200\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "{{protocol}}://{{base_url}}/{{auth_service_path}}/verify-token",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"{{auth_service_path}}",
+										"verify-token"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Logout",
+					"item": [
+						{
+							"name": "POST Logout",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 200\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "{{protocol}}://{{base_url}}/{{auth_service_path}}/logout",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"{{auth_service_path}}",
+										"logout"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "App Service",
+			"item": [
+				{
+					"name": "GET /",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disabledSystemHeaders": {}
+					},
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{protocol}}://{{base_url}}/{{app_service_path}}/",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"{{app_service_path}}",
+								""
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}

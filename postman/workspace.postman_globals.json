@@ -1,0 +1,27 @@
+{
+	"id": "004edd4e-087c-4f75-874e-b4e9e59f7182",
+	"values": [
+		{
+			"key": "auth_service_path",
+			"value": "auth",
+			"type": "default",
+			"enabled": true
+		},
+		{
+			"key": "app_service_path",
+			"value": "app",
+			"type": "default",
+			"enabled": true
+		},
+		{
+			"key": "protocol",
+			"value": "http",
+			"type": "default",
+			"enabled": false
+		}
+	],
+	"name": "Globals",
+	"_postman_variable_scope": "globals",
+	"_postman_exported_at": "2025-07-31T19:13:55.448Z",
+	"_postman_exported_using": "Postman/11.47.0"
+}
