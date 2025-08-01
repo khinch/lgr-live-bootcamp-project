@@ -39,6 +39,13 @@ impl UserStore for HashmapUserStore {
             Err(UserStoreError::InvalidCredentials)
         }
     }
+
+    async fn delete_user(&mut self, email: &Email) -> Result<(), UserStoreError> {
+        match self.users.remove(email) {
+            Some(_) => Ok(()),
+            None => Err(UserStoreError::UserNotFound),
+        }
+    }
 }
 
 #[cfg(test)]
@@ -142,5 +149,35 @@ mod tests {
             Err(UserStoreError::InvalidCredentials),
             "User credentials should be invalid"
         );
+    }
+
+    #[tokio::test]
+    async fn test_delete_user() {
+        let mut users = HashmapUserStore::default();
+
+        let user = User::new(
+            Email::parse("test@example.com".to_string()).unwrap(),
+            Password::parse("P@55w0rd".to_string()).unwrap(),
+            true,
+        );
+
+        // Should be able to re-add and re-delete
+        for _ in 0..2 {
+            users
+                .add_user(user.clone())
+                .await
+                .expect(user.email.as_ref());
+
+            assert_eq!(
+                users.delete_user(&user.email).await,
+                Ok(()),
+                "Failed to delete user"
+            );
+            assert_eq!(
+                users.delete_user(&user.email).await,
+                Err(UserStoreError::UserNotFound),
+                "Failed to delete user"
+            );
+        }
     }
 }

@@ -1,10 +1,11 @@
 use axum::{
     http::StatusCode,
     response::{IntoResponse, Response},
-    routing::post,
+    routing::{delete, post},
     serve::Serve,
     Json, Router,
 };
+
 use serde::{Deserialize, Serialize};
 use std::error::Error;
 use tokio::signal;
@@ -12,7 +13,7 @@ use tower_http::services::ServeDir;
 
 use domain::AuthAPIError;
 pub mod routes;
-use crate::routes::{login, logout, signup, verify_2fa, verify_token};
+use crate::routes::{delete_user, login, logout, signup, verify_2fa, verify_token};
 pub mod app_state;
 pub mod domain;
 pub mod services;
@@ -27,7 +28,8 @@ impl IntoResponse for AuthAPIError {
     fn into_response(self) -> Response {
         let (status, error_message) = match self {
             AuthAPIError::UserAlreadyExists => (StatusCode::CONFLICT, "User already exists"),
-            AuthAPIError::InvalidCredentials => (StatusCode::BAD_REQUEST, "Invalid credentials"),
+            AuthAPIError::ValidationError => (StatusCode::BAD_REQUEST, "Invalid input"),
+            AuthAPIError::UserNotFound => (StatusCode::NOT_FOUND, "User not found"),
             AuthAPIError::UnexpectedError => {
                 (StatusCode::INTERNAL_SERVER_ERROR, "Unexpected error")
             }
@@ -53,6 +55,7 @@ impl Application {
             .route("/verify-2fa", post(verify_2fa))
             .route("/logout", post(logout))
             .route("/verify-token", post(verify_token))
+            .route("/delete-user", delete(delete_user))
             .with_state(app_state);
 
         let listener = tokio::net::TcpListener::bind(address).await?;
