@@ -676,7 +676,7 @@
 					"name": "Login",
 					"item": [
 						{
-							"name": "POST Login",
+							"name": "POST Login - Success",
 							"event": [
 								{
 									"listen": "test",
@@ -697,6 +697,252 @@
 								},
 								"method": "POST",
 								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"email\": \"{{random_email}}\",\n    \"password\": \"password\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{protocol}}://{{base_url}}/{{auth_service_path}}/login",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"{{auth_service_path}}",
+										"login"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "POST Login - Error - Invalid Email",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 400\", function () {",
+											"    pm.response.to.have.status(400); ",
+											"});",
+											"",
+											"pm.test(\"Response message is correct\", function () {",
+											"    const jsonData = pm.response.json();",
+											"    pm.expect(jsonData.error).to.eql('Invalid input');",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"packages": {},
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"email\": \"foobar.com\",\n    \"password\": \"password\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{protocol}}://{{base_url}}/{{auth_service_path}}/login",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"{{auth_service_path}}",
+										"login"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "POST Login - Error - Invalid Password",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 400\", function () {",
+											"    pm.response.to.have.status(400); ",
+											"});",
+											"",
+											"pm.test(\"Response message is correct\", function () {",
+											"    const jsonData = pm.response.json();",
+											"    pm.expect(jsonData.error).to.eql('Invalid input');",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"email\": \"foo@bar.com\",\n    \"password\": \"passwor\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{protocol}}://{{base_url}}/{{auth_service_path}}/login",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"{{auth_service_path}}",
+										"login"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "POST Login - Error - Non-existent User",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 401\", function () {",
+											"    pm.response.to.have.status(401); ",
+											"});",
+											"",
+											"pm.test(\"Response message is correct\", function () {",
+											"    const jsonData = pm.response.json();",
+											"    pm.expect(jsonData.error).to.eql('Incorrect credentials');",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"email\": \"nonexistent@user.com\",\n    \"password\": \"password\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{protocol}}://{{base_url}}/{{auth_service_path}}/login",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"{{auth_service_path}}",
+										"login"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "POST Login - Error - Wrong Password",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 401\", function () {",
+											"    pm.response.to.have.status(401); ",
+											"});",
+											"",
+											"pm.test(\"Response message is correct\", function () {",
+											"    const jsonData = pm.response.json();",
+											"    pm.expect(jsonData.error).to.eql('Incorrect credentials');",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"email\": \"{{random_email}}\",\n    \"password\": \"passworb\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
 								"url": {
 									"raw": "{{protocol}}://{{base_url}}/{{auth_service_path}}/login",
 									"protocol": "{{protocol}}",
