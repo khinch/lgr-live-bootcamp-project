@@ -18,6 +18,7 @@ pub mod app_state;
 pub mod domain;
 pub mod services;
 use app_state::AppState;
+pub mod utils;
 
 #[derive(Serialize, Deserialize)]
 pub struct ErrorResponse {

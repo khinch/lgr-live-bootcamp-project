@@ -34,3 +34,5 @@ services:
   auth-service:
     image: kierenlgr/auth-service
     restart: "always"
+    environment:
+      JWT_SECRET: ${JWT_SECRET}
