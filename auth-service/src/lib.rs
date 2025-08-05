@@ -1,5 +1,5 @@
 use axum::{
-    http::StatusCode,
+    http::{Method, StatusCode},
     response::{IntoResponse, Response},
     routing::{delete, post},
     serve::Serve,
@@ -9,7 +9,7 @@ use axum::{
 use serde::{Deserialize, Serialize};
 use std::error::Error;
 use tokio::signal;
-use tower_http::services::ServeDir;
+use tower_http::{cors::CorsLayer, services::ServeDir};
 
 use domain::AuthAPIError;
 pub mod routes;
@@ -37,6 +37,8 @@ impl IntoResponse for AuthAPIError {
             AuthAPIError::UnexpectedError => {
                 (StatusCode::INTERNAL_SERVER_ERROR, "Unexpected error")
             }
+            AuthAPIError::MissingToken => (StatusCode::BAD_REQUEST, "Missing token"),
+            AuthAPIError::InvalidToken => (StatusCode::UNAUTHORIZED, "Invalid token"),
         };
         let body = Json(ErrorResponse {
             error: error_message.to_string(),
@@ -52,6 +54,16 @@ pub struct Application {
 
 impl Application {
     pub async fn build(app_state: AppState, address: &str) -> Result<Self, Box<dyn Error>> {
+        let allowed_origins = [
+            "http://localhost:8000".parse()?,
+            "http://67.205.162.100:8000".parse()?,
+        ];
+
+        let cors = CorsLayer::new()
+            .allow_methods([Method::GET, Method::POST])
+            .allow_credentials(true)
+            .allow_origin(allowed_origins);
+
         let router = Router::new()
             .nest_service("/", ServeDir::new("assets"))
             .route("/signup", post(signup))
@@ -60,7 +72,8 @@ impl Application {
             .route("/logout", post(logout))
             .route("/verify-token", post(verify_token))
             .route("/delete-user", delete(delete_user))
-            .with_state(app_state);
+            .with_state(app_state)
+            .layer(cors);
 
         let listener = tokio::net::TcpListener::bind(address).await?;
         let address = listener.local_addr()?.to_string();
@@ -75,6 +88,7 @@ impl Application {
     }
 }
 
+#[allow(dead_code)]
 async fn shutdown_signal() {
     let ctrl_c = async {
         signal::ctrl_c()
@@ -90,6 +104,7 @@ async fn shutdown_signal() {
             .await;
     };
 
+    #[allow(dead_code)]
     #[cfg(not(unix))]
     let terminate = std::future::pending::<()>();
 

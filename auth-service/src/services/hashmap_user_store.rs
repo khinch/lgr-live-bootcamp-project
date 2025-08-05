@@ -176,7 +176,7 @@ mod tests {
             assert_eq!(
                 users.delete_user(&user.email).await,
                 Err(UserStoreError::UserNotFound),
-                "Failed to delete user"
+                "User should not have existed"
             );
         }
     }
