@@ -1,4 +1,4 @@
-use auth_service::utils::constants::JWT_COOKIE_NAME;
+use auth_service::{domain::TokenStoreError, utils::constants::JWT_COOKIE_NAME};
 use reqwest::Url;
 
 use crate::helpers::{get_random_email, TestApp};
@@ -21,18 +21,44 @@ async fn should_return_200_if_valid_jwt_cookie() {
         201
     );
 
-    assert_eq!(
-        app.post_login(&serde_json::json!({
+    let login_response = app
+        .post_login(&serde_json::json!({
             "email": email,
             "password": password
         }))
-        .await
-        .status()
-        .as_u16(),
-        200
+        .await;
+    assert_eq!(login_response.status().as_u16(), 200);
+
+    let auth_cookie = login_response
+        .cookies()
+        .find(|cookie| cookie.name() == JWT_COOKIE_NAME)
+        .expect("No auth cookie in jar");
+
+    let token = auth_cookie.value();
+
+    assert_eq!(
+        app.banned_token_store.read().await.check_token(token).await,
+        Ok(())
     );
 
-    assert_eq!(app.post_logout().await.status().as_u16(), 200);
+    let response = app.post_logout().await;
+    assert_eq!(
+        response.status().as_u16(),
+        200,
+        "Unexpected error logging out"
+    );
+
+    let auth_cookie = response
+        .cookies()
+        .find(|cookie| cookie.name() == JWT_COOKIE_NAME)
+        .expect("No auth cookie found");
+
+    assert!(auth_cookie.value().is_empty());
+
+    assert_eq!(
+        app.banned_token_store.read().await.check_token(token).await,
+        Err(TokenStoreError::BannedToken)
+    );
 }
 
 #[tokio::test]

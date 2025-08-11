@@ -1226,6 +1226,66 @@
 					]
 				},
 				{
+					"name": "Verify Token - Banned",
+					"item": [
+						{
+							"name": "POST Verify Token - Banned",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 401\", function () {",
+											"    pm.response.to.have.status(401);",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"token\": \"{{token}}\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{protocol}}://{{base_url}}/{{auth_service_path}}/verify-token",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"{{auth_service_path}}",
+										"verify-token"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
 					"name": "Delete User",
 					"item": [
 						{
@@ -1564,6 +1624,66 @@
 							"response": []
 						}
 					]
+				}
+			]
+		},
+		{
+			"name": "Login - Deleted",
+			"item": [
+				{
+					"name": "POST Login - Deleted",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 401\", function () {",
+									"    pm.response.to.have.status(401);",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"{{random_email}}\",\n    \"password\": \"password\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{protocol}}://{{base_url}}/{{auth_service_path}}/login",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"{{auth_service_path}}",
+								"login"
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		},

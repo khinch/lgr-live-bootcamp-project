@@ -76,3 +76,53 @@ async fn should_return_422_if_malformed_input() {
         assert_eq!(response.status().as_u16(), 422);
     }
 }
+
+#[tokio::test]
+async fn should_return_401_if_banned_token() {
+    let app = TestApp::new().await;
+    let email = get_random_email();
+    let password = "password";
+
+    assert_eq!(
+        app.post_signup(&serde_json::json!({
+            "email": email,
+            "password": password,
+            "requires2FA": false
+        }))
+        .await
+        .status()
+        .as_u16(),
+        201
+    );
+
+    let login_response = app
+        .post_login(&serde_json::json!({
+            "email": email,
+            "password": password
+        }))
+        .await;
+    assert_eq!(login_response.status().as_u16(), 200);
+
+    let token = login_response
+        .cookies()
+        .find(|cookie| cookie.name() == JWT_COOKIE_NAME)
+        .expect("No auth cookie found")
+        .value()
+        .to_owned();
+
+    let verify_token_body = serde_json::json!({"token": &token});
+
+    assert_eq!(
+        app.post_verify_token(&verify_token_body)
+            .await
+            .status()
+            .as_u16(),
+        200
+    );
+
+    assert_eq!(app.post_logout().await.status().as_u16(), 200);
+
+    let response = app.post_verify_token(&verify_token_body).await;
+
+    assert_eq!(response.status().as_u16(), 401);
+}
