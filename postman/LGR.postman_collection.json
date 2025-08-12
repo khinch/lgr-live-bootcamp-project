@@ -64,7 +64,7 @@
 											"let uuid = require('uuid');",
 											"let email = `${uuid.v4()}@testwebsitepleaseignore.uk`;",
 											"pm.environment.set(\"random_email\", email);",
-											""
+											"console.log(`Email: ${email}`);"
 										],
 										"type": "text/javascript",
 										"packages": {}
@@ -102,7 +102,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"email\": \"{{random_email}}\",\n    \"password\": \"password\",\n    \"requires2FA\": true\n}",
+									"raw": "{\n    \"email\": \"{{random_email}}\",\n    \"password\": \"password\",\n    \"requires2FA\": false\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -240,7 +240,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"email\": \"{{random_email}}\",\n    \"password\": \"password\",\n    \"requires2FA\": true\n}",
+									"raw": "{\n    \"email\": \"{{random_email}}\",\n    \"password\": \"password\",\n    \"requires2FA\": false\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -307,7 +307,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"password\": \"password\",\n    \"requires2FA\": true\n}",
+									"raw": "{\n    \"password\": \"password\",\n    \"requires2FA\": false\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -374,7 +374,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"email\": \"{{random_email}}\",\n    \"requires2FA\": true\n}",
+									"raw": "{\n    \"email\": \"{{random_email}}\",\n    \"requires2FA\": false\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -507,7 +507,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"email\": \"foobar.com\",\n    \"password\": \"password\",\n    \"requires2FA\": true\n}",
+									"raw": "{\n    \"email\": \"foobar.com\",\n    \"password\": \"password\",\n    \"requires2FA\": false\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -578,7 +578,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"email\": \"set by script\",\n    \"password\": \"1234567\",\n    \"requires2FA\": true\n}",
+									"raw": "{\n    \"email\": \"set by script\",\n    \"password\": \"1234567\",\n    \"requires2FA\": false\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -649,7 +649,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"email\": \"set by script\",\n    \"password\": \"12345678901234567890123456789012345678901234567890123456789012345\",\n    \"requires2FA\": true\n}",
+									"raw": "{\n    \"email\": \"set by script\",\n    \"password\": \"12345678901234567890123456789012345678901234567890123456789012345\",\n    \"requires2FA\": false\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -1624,66 +1624,204 @@
 							"response": []
 						}
 					]
-				}
-			]
-		},
-		{
-			"name": "Login - Deleted",
-			"item": [
+				},
 				{
-					"name": "POST Login - Deleted",
-					"event": [
+					"name": "Login - Deleted",
+					"item": [
 						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Status code is 401\", function () {",
-									"    pm.response.to.have.status(401);",
-									"});"
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						},
-						{
-							"listen": "prerequest",
-							"script": {
-								"exec": [
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "noauth"
-						},
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"email\": \"{{random_email}}\",\n    \"password\": \"password\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
+							"name": "POST Login - Deleted",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 401\", function () {",
+											"    pm.response.to.have.status(401);",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
 								}
-							}
-						},
-						"url": {
-							"raw": "{{protocol}}://{{base_url}}/{{auth_service_path}}/login",
-							"protocol": "{{protocol}}",
-							"host": [
-								"{{base_url}}"
 							],
-							"path": [
-								"{{auth_service_path}}",
-								"login"
-							]
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"email\": \"{{random_email}}\",\n    \"password\": \"password\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{protocol}}://{{base_url}}/{{auth_service_path}}/login",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"{{auth_service_path}}",
+										"login"
+									]
+								}
+							},
+							"response": []
 						}
-					},
-					"response": []
+					]
+				},
+				{
+					"name": "2FA",
+					"item": [
+						{
+							"name": "POST Signup - Success - 2FA Enabled",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"let uuid = require('uuid');",
+											"let email = `${uuid.v4()}@testwebsitepleaseignore.uk`;",
+											"pm.environment.set(\"random_email\", email);",
+											"console.log(`Email: ${email}`);"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 201\", function () {",
+											"    pm.response.to.have.status(201); ",
+											"});",
+											"",
+											"pm.test(\"Response message is correct\", function () {",
+											"    const jsonData = pm.response.json();",
+											"    pm.expect(jsonData.message).to.eql('User created successfully');",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"email\": \"{{random_email}}\",\n    \"password\": \"password\",\n    \"requires2FA\": true\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{protocol}}://{{base_url}}/{{auth_service_path}}/signup",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"{{auth_service_path}}",
+										"signup"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "POST Login - 2FA Challenge",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 206\", function () {",
+											"    pm.response.to.have.status(206);",
+											"});",
+											"",
+											"const jsonData = pm.response.json();",
+											"",
+											"pm.test(\"Response message is correct\", function () {    ",
+											"    pm.expect(jsonData.message).to.eql('2FA required');",
+											"    pm.expect(jsonData.loginAttemptId).to.not.be.null;",
+											"});",
+											"",
+											"pm.environment.set(\"2fa_code\", jsonData.loginAttemptId);"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"email\": \"{{random_email}}\",\n    \"password\": \"password\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{protocol}}://{{base_url}}/{{auth_service_path}}/login",
+									"protocol": "{{protocol}}",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"{{auth_service_path}}",
+										"login"
+									]
+								}
+							},
+							"response": []
+						}
+					]
 				}
 			]
 		},
