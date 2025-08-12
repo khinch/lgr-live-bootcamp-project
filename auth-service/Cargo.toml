@@ -13,9 +13,12 @@ chrono = "0.4.35"
 dotenvy = "0.15.7"
 jsonwebtoken = "9.2.0"
 lazy_static = "1.4.0"
+rand = "0.8.5"
+regex = "1.11.1"
 serde = { version = "1.0", features = ["derive"] }
 tokio = { version = "1.36", features = ["full"] }
 tower-http = { version = "0.5.0", features = ["cors", "fs"] }
+uuid = { version = "1.7.0", features = ["v4", "serde"] }
 validator = { version = "0.16.1", features = ["derive"] }
 
 [dev-dependencies]
@@ -27,4 +30,3 @@ reqwest = { version = "0.12.22", default-features = false, features = [
     "cookies",
 ] }
 serde_json = "1.0"
-uuid = { version = "1.7.0", features = ["v4", "serde"] }

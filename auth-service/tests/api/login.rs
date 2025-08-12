@@ -1,5 +1,7 @@
 use crate::helpers::{get_random_email, TestApp};
-use auth_service::{utils::constants::JWT_COOKIE_NAME, ErrorResponse};
+use auth_service::{
+    domain::Email, routes::TwoFactorAuthResponse, utils::constants::JWT_COOKIE_NAME, ErrorResponse,
+};
 
 #[tokio::test]
 async fn should_return_200_if_valid_credentials_and_2fa_disabled() {
@@ -27,6 +29,49 @@ async fn should_return_200_if_valid_credentials_and_2fa_disabled() {
         .find(|cookie| cookie.name() == JWT_COOKIE_NAME)
         .expect("No auth cookie found");
     assert!(!auth_cookie.value().is_empty());
+}
+
+#[tokio::test]
+async fn should_return_206_if_valid_credentials_and_2fa_enabled() {
+    let app = TestApp::new().await;
+    let random_email = get_random_email();
+    let signup_body = serde_json::json!({
+        "email": random_email,
+        "password": "password",
+        "requires2FA": true
+    });
+
+    let response = app.post_signup(&signup_body).await;
+    assert_eq!(response.status().as_u16(), 201);
+
+    let login_body = serde_json::json!({
+        "email": random_email,
+        "password": "password"
+    });
+
+    let response = app.post_login(&login_body).await;
+    assert_eq!(response.status().as_u16(), 206);
+
+    let json_body = response
+        .json::<TwoFactorAuthResponse>()
+        .await
+        .expect("Could not deserialize response body to TwoFactorAuthResponse");
+    assert_eq!(json_body.message, String::from("2FA required"));
+
+    let email = Email::parse(String::from(&random_email)).expect("Failed to parse email");
+
+    let (expected_id, _two_fa_code) = app
+        .two_fa_code_store
+        .read()
+        .await
+        .get_code(&email)
+        .await
+        .expect("Failed to get 2FA data from store");
+    assert_eq!(
+        json_body.login_attempt_id,
+        String::from(expected_id.as_ref()),
+        "2FA IDs do not match"
+    );
 }
 
 #[tokio::test]
@@ -113,7 +158,7 @@ async fn should_return_401_if_credentials_incorrect() {
     let signup_data = serde_json::json!({
         "email": email,
         "password": password,
-        "requires2FA": true
+        "requires2FA": false
     });
 
     let response = app.post_signup(&signup_data).await;
