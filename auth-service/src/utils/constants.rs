@@ -6,15 +6,43 @@ pub const JWT_COOKIE_NAME: &str = "jwt";
 
 lazy_static! {
     pub static ref JWT_SECRET: String = set_token();
+    pub static ref APP_SERVICE_EXTERNAL_ADDRESS: String = load_or_default(
+        "APP_SERVICE_EXTERNAL_ADDRESS",
+        "http://localhost:8000"
+    );
+    pub static ref APP_SERVICE_CONTAINER_ADDRESS: String = load_or_default(
+        "APP_SERVICE_CONTAINER_ADDRESS",
+        "http://localhost:8000"
+    );
+}
+
+fn load_env() {
+    dotenv().ok();
 }
 
 fn set_token() -> String {
-    dotenv().ok();
-    let secret = std_env::var(env::JWT_SECRET_ENV_VAR).expect("JWT_SECRET must be set.");
+    load_env();
+    let secret =
+        std_env::var(env::JWT_SECRET_ENV_VAR).expect("JWT_SECRET must be set.");
     if secret.is_empty() {
         panic!("JWT_SECRET must not be empty.");
     }
     secret
+}
+
+fn load_or_default(variable_name: &str, default_value: &str) -> String {
+    load_env();
+
+    match std_env::var(variable_name) {
+        Ok(value) => {
+            if value.is_empty() {
+                String::from(default_value)
+            } else {
+                value
+            }
+        }
+        Err(_) => String::from(default_value),
+    }
 }
 
 pub mod env {

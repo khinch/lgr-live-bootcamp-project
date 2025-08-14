@@ -67,6 +67,7 @@ loginButton.addEventListener("click", (e) => {
       loginForm.password.value = "";
       loginErrAlter.style.display = "none";
       alert("You have successfully logged in.");
+      window.location.href = "{{app_service_external_address}}";
     } else {
       response.json().then((data) => {
         let error_msg = data.error;
@@ -149,6 +150,7 @@ TwoFAButton.addEventListener("click", (e) => {
       loginSection.style.display = "block";
       twoFASection.style.display = "none";
       signupSection.style.display = "none";
+      window.location.href = "{{app_service_external_address}}";
     } else {
       response.json().then((data) => {
         let error_msg = data.error;

@@ -13,6 +13,8 @@ services:
       - app-service
       - auth-service
     command: '/bin/sh -c ''while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g "daemon off;"'''
+    networks:
+      proxy:
 
   certbot:
     image: certbot/certbot
@@ -21,18 +23,29 @@ services:
       - ./certbot/conf:/etc/letsencrypt
       - ./certbot/www:/var/www/certbot
     entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+    networks:
+      proxy:
 
   app-service:
     image: kierenlgr/app-service
     restart: "always"
     environment:
-      AUTH_SERVICE_IP: ${AUTH_SERVICE_IP:-localhost}
+      AUTH_SERVICE_CONTAINER_ADDRESS: http://auth-service:3000
+      AUTH_SERVICE_EXTERNAL_ADDRESS: https://lgr.testwebsitepleaseignore.uk/auth
     depends_on:
       auth-service:
         condition: service_started
+    networks:
+      proxy:
 
   auth-service:
     image: kierenlgr/auth-service
     restart: "always"
     environment:
+      APP_SERVICE_CONTAINER_ADDRESS: http://app-service:8000
+      APP_SERVICE_EXTERNAL_ADDRESS: https://lgr.testwebsitepleaseignore.uk/app
       JWT_SECRET: ${JWT_SECRET}
+    networks:
+      proxy:
+networks:
+  proxy:

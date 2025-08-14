@@ -15,7 +15,8 @@ services:
     image: kierenlgr/app-service
     restart: "always"
     environment:
-      AUTH_SERVICE_IP: ${AUTH_SERVICE_IP:-localhost}
+      AUTH_SERVICE_CONTAINER_ADDRESS: ${AUTH_SERVICE_CONTAINER_ADDRESS}
+      AUTH_SERVICE_EXTERNAL_ADDRESS: ${AUTH_SERVICE_EXTERNAL_ADDRESS}
     depends_on:
       auth-service:
         condition: service_started
@@ -25,6 +26,8 @@ services:
     image: kierenlgr/auth-service
     restart: "always"
     environment:
+      APP_SERVICE_CONTAINER_ADDRESS: ${APP_SERVICE_CONTAINER_ADDRESS}
+      APP_SERVICE_EXTERNAL_ADDRESS: ${APP_SERVICE_EXTERNAL_ADDRESS}
       JWT_SECRET: ${JWT_SECRET}
     networks:
       proxy:

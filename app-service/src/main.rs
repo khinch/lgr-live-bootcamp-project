@@ -60,12 +60,20 @@ struct IndexTemplate {
 }
 
 async fn root() -> impl IntoResponse {
-    let mut address = env::var("AUTH_SERVICE_IP").unwrap_or("localhost".to_owned());
-    if address.is_empty() {
-        address = "localhost".to_owned();
-    }
-    let login_link = format!("http://{}:3000", address);
-    let logout_link = format!("http://{}:3000/logout", address);
+    let default_address = String::from("http://localhost:3000");
+    let auth_service_external_address = match env::var("AUTH_SERVICE_EXTERNAL_ADDRESS") {
+        Ok(address) => {
+            if address.is_empty() {
+                default_address
+            } else {
+                address
+            }
+        }
+        Err(_) => default_address,
+    };
+
+    let login_link = format!("{}", auth_service_external_address);
+    let logout_link = format!("{}/logout", auth_service_external_address);
 
     let template = IndexTemplate {
         login_link,
@@ -88,8 +96,19 @@ async fn protected(jar: CookieJar) -> impl IntoResponse {
         "token": &jwt_cookie.value(),
     });
 
-    let auth_hostname = env::var("AUTH_SERVICE_HOST_NAME").unwrap_or("0.0.0.0".to_owned());
-    let url = format!("http://{}:3000/verify-token", auth_hostname);
+    let default_address = String::from("http://localhost:3000");
+    let auth_service_container_address = match env::var("AUTH_SERVICE_CONTAINER_ADDRESS") {
+        Ok(address) => {
+            if address.is_empty() {
+                default_address
+            } else {
+                address
+            }
+        }
+        Err(_) => default_address,
+    };
+
+    let url = format!("{}/verify-token", auth_service_container_address);
 
     let response = match api_client.post(&url).json(&verify_token_body).send().await {
         Ok(response) => response,

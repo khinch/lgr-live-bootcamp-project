@@ -1,7 +1,8 @@
+use askama::Template;
 use axum::{
     http::{Method, StatusCode},
     response::{IntoResponse, Response},
-    routing::{delete, post},
+    routing::{delete, get, post},
     serve::Serve,
     Json, Router,
 };
@@ -13,7 +14,10 @@ use tower_http::{cors::CorsLayer, services::ServeDir};
 
 use domain::AuthAPIError;
 pub mod routes;
-use crate::routes::{delete_user, login, logout, signup, verify_2fa, verify_token};
+use crate::routes::{
+    delete_user, login, logout, signup, verify_2fa, verify_token,
+};
+use crate::utils::constants::APP_SERVICE_EXTERNAL_ADDRESS;
 pub mod app_state;
 pub mod domain;
 pub mod services;
@@ -28,17 +32,27 @@ pub struct ErrorResponse {
 impl IntoResponse for AuthAPIError {
     fn into_response(self) -> Response {
         let (status, error_message) = match self {
-            AuthAPIError::UserAlreadyExists => (StatusCode::CONFLICT, "User already exists"),
-            AuthAPIError::ValidationError => (StatusCode::BAD_REQUEST, "Invalid input"),
-            AuthAPIError::UserNotFound => (StatusCode::NOT_FOUND, "User not found"),
+            AuthAPIError::UserAlreadyExists => {
+                (StatusCode::CONFLICT, "User already exists")
+            }
+            AuthAPIError::ValidationError => {
+                (StatusCode::BAD_REQUEST, "Invalid input")
+            }
+            AuthAPIError::UserNotFound => {
+                (StatusCode::NOT_FOUND, "User not found")
+            }
             AuthAPIError::IncorrectCredentials => {
                 (StatusCode::UNAUTHORIZED, "Incorrect credentials")
             }
             AuthAPIError::UnexpectedError => {
                 (StatusCode::INTERNAL_SERVER_ERROR, "Unexpected error")
             }
-            AuthAPIError::MissingToken => (StatusCode::BAD_REQUEST, "Missing token"),
-            AuthAPIError::InvalidToken => (StatusCode::UNAUTHORIZED, "Invalid token"),
+            AuthAPIError::MissingToken => {
+                (StatusCode::BAD_REQUEST, "Missing token")
+            }
+            AuthAPIError::InvalidToken => {
+                (StatusCode::UNAUTHORIZED, "Invalid token")
+            }
         };
         let body = Json(ErrorResponse {
             error: error_message.to_string(),
@@ -53,10 +67,20 @@ pub struct Application {
 }
 
 impl Application {
-    pub async fn build(app_state: AppState, address: &str) -> Result<Self, Box<dyn Error>> {
+    pub async fn build(
+        app_state: AppState,
+        address: &str,
+    ) -> Result<Self, Box<dyn Error>> {
         let allowed_origins = [
             "http://localhost:8000".parse()?,
+            "http://localhost:5000".parse()?,
+            "http://127.0.0.1:8000".parse()?,
+            "http://127.0.0.1:5000".parse()?,
+            "http://app-service:8000".parse()?,
             "http://67.205.162.100:8000".parse()?,
+            "https://67.205.162.100:8000".parse()?,
+            "http://lgr.testwebsitepleaseignore.uk:8000".parse()?,
+            "https://lgr.testwebsitepleaseignore.uk:8000".parse()?,
         ];
 
         let cors = CorsLayer::new()
@@ -72,6 +96,7 @@ impl Application {
             .route("/logout", post(logout))
             .route("/verify-token", post(verify_token))
             .route("/delete-user", delete(delete_user))
+            .route("/app.js", get(serve_app_js))
             .with_state(app_state)
             .layer(cors);
 
@@ -112,4 +137,25 @@ async fn shutdown_signal() {
         _ = ctrl_c => {},
         _ = terminate => {},
     }
+}
+
+#[derive(Template)]
+#[template(path = "app.js", escape = "none")]
+struct AppJsTemplate {
+    app_service_external_address: String,
+}
+
+async fn serve_app_js() -> impl IntoResponse {
+    let app_service_external_address = APP_SERVICE_EXTERNAL_ADDRESS.to_string();
+
+    let template = AppJsTemplate {
+        app_service_external_address,
+    };
+
+    (
+        [("content-type", "application/javascript")],
+        template
+            .render()
+            .expect("Failed to render auth-service app.js template"),
+    )
 }
