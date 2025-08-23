@@ -14,6 +14,7 @@ lazy_static! {
         "APP_SERVICE_CONTAINER_ADDRESS",
         "http://localhost:8000"
     );
+    pub static ref DATABASE_URL: String = get_db_url();
 }
 
 fn load_env() {
@@ -28,6 +29,16 @@ fn set_token() -> String {
         panic!("JWT_SECRET must not be empty.");
     }
     secret
+}
+
+fn get_db_url() -> String {
+    load_env();
+    let db_url =
+        std_env::var("DATABASE_URL").expect("DATABASE_URL must be set.");
+    if db_url.is_empty() {
+        panic!("DATABASE_URL must not be empty.");
+    }
+    db_url
 }
 
 fn load_or_default(variable_name: &str, default_value: &str) -> String {

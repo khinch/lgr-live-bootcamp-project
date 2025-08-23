@@ -3,10 +3,16 @@ use super::{Email, LoginAttemptId, Password, TwoFACode, User};
 #[async_trait::async_trait]
 pub trait UserStore {
     async fn add_user(&mut self, user: User) -> Result<(), UserStoreError>;
-    async fn get_user(&self, email: Email) -> Result<User, UserStoreError>;
-    async fn validate_user(&self, email: &Email, password: &Password)
-        -> Result<(), UserStoreError>;
-    async fn delete_user(&mut self, email: &Email) -> Result<(), UserStoreError>;
+    async fn get_user(&self, email: &Email) -> Result<User, UserStoreError>;
+    async fn validate_user(
+        &self,
+        email: &Email,
+        password: &Password,
+    ) -> Result<(), UserStoreError>;
+    async fn delete_user(
+        &mut self,
+        email: &Email,
+    ) -> Result<(), UserStoreError>;
 }
 
 #[derive(Debug, PartialEq)]
@@ -38,7 +44,10 @@ pub trait TwoFACodeStore {
         code: TwoFACode,
     ) -> Result<(), TwoFACodeStoreError>;
 
-    async fn remove_code(&mut self, email: &Email) -> Result<(), TwoFACodeStoreError>;
+    async fn remove_code(
+        &mut self,
+        email: &Email,
+    ) -> Result<(), TwoFACodeStoreError>;
     async fn get_code(
         &self,
         email: &Email,

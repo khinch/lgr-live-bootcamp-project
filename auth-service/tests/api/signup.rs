@@ -52,6 +52,11 @@ async fn should_return_201_for_valid_requests() {
             "password": "abcd1234",
             "requires2FA": false
         }),
+        serde_json::json!({
+            "email": get_random_email(),
+            "password": "abcdefghijklmnopqrstuvwxyz1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ12abcdefghijklmnopqrstuvwxyz1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ12",
+            "requires2FA": false
+        }),
     ];
 
     for test_case in test_cases.iter() {
@@ -96,6 +101,11 @@ async fn should_return_400_if_invalid_input() {
             "email": "a@b.com",
             "password": "abcd123",
             "requires2FA": true
+        }),
+        serde_json::json!({
+            "email": "foo@bar.com",
+            "password": "abcdefghijklmnopqrstuvwxyz1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ12abcdefghijklmnopqrstuvwxyz1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ123",
+            "requires2FA": false
         }),
     ];
 

@@ -1,6 +1,6 @@
 use super::{Email, Password};
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, sqlx::FromRow)]
 pub struct User {
     pub email: Email,
     pub password: Password,

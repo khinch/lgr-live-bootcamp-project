@@ -20,7 +20,7 @@ impl UserStore for HashmapUserStore {
         Ok(())
     }
 
-    async fn get_user(&self, email: Email) -> Result<User, UserStoreError> {
+    async fn get_user(&self, email: &Email) -> Result<User, UserStoreError> {
         match self.users.get(&email) {
             Some(user) => Ok(user.clone()),
             None => Err(UserStoreError::UserNotFound),
@@ -32,7 +32,7 @@ impl UserStore for HashmapUserStore {
         email: &Email,
         password: &Password,
     ) -> Result<(), UserStoreError> {
-        let user = self.get_user(email.clone()).await?;
+        let user = self.get_user(&email).await?;
         if password.eq(&user.password) {
             Ok(())
         } else {
@@ -40,7 +40,10 @@ impl UserStore for HashmapUserStore {
         }
     }
 
-    async fn delete_user(&mut self, email: &Email) -> Result<(), UserStoreError> {
+    async fn delete_user(
+        &mut self,
+        email: &Email,
+    ) -> Result<(), UserStoreError> {
         match self.users.remove(email) {
             Some(_) => Ok(()),
             None => Err(UserStoreError::UserNotFound),
@@ -94,16 +97,17 @@ mod tests {
             users.add_user(test_user.clone()).await.unwrap();
 
             assert_eq!(
-                users.get_user(test_user.email.clone()).await,
+                users.get_user(&test_user.email).await,
                 Ok(test_user.clone()),
                 "Failed to get user with email: {:?}",
                 &test_user.email
             );
         }
 
-        let non_existent_user = Email::parse("no@email.com".to_string()).unwrap();
+        let non_existent_user =
+            Email::parse("no@email.com".to_string()).unwrap();
         assert_eq!(
-            users.get_user(non_existent_user).await,
+            users.get_user(&non_existent_user).await,
             Err(UserStoreError::UserNotFound),
             "User should not exist"
         );
@@ -113,9 +117,12 @@ mod tests {
     async fn test_validate_user() {
         let mut users = HashmapUserStore::default();
         let existent_email = Email::parse("foo@bar.com".to_string()).unwrap();
-        let non_existent_email = Email::parse("lorem@ipsum.com".to_string()).unwrap();
-        let existent_password = Password::parse("P@55w0rd".to_string()).unwrap();
-        let non_existent_password = Password::parse("P155w0rd".to_string()).unwrap();
+        let non_existent_email =
+            Email::parse("lorem@ipsum.com".to_string()).unwrap();
+        let existent_password =
+            Password::parse("P@55w0rd".to_string()).unwrap();
+        let non_existent_password =
+            Password::parse("P155w0rd".to_string()).unwrap();
 
         users
             .add_user(User::new(

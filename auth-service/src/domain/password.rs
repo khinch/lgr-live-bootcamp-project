@@ -18,7 +18,7 @@ impl Password {
 
 fn validate_password(password: &str) -> Result<(), String> {
     let min_characters = 8;
-    let max_characters = 64;
+    let max_characters = 128;
     let char_count = password.chars().count();
 
     if char_count < min_characters {
@@ -52,13 +52,14 @@ mod tests {
     fn test_valid_passwords() {
         let valid_passwords = [
             "12345678",
-            "abcdefghijklmnopqrstuvwxyz1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ12",
+            "abcdefghijklmnopqrstuvwxyz1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ12abcdefghijklmnopqrstuvwxyz1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ12",
             r##"`¬!"£$%^&*()_-=+[]{}|\'@#~;:/?<>,.\\\\\\\\\\"##,
             "😀😁😂😃😄😅😆😎",
-            "☀☁☂☃☄★☆☇☈☉☊☋☌☍☎☏☐☑☒☓☔☕ħĨ☘☙☚☛☜☝☞☟☠☡☢☣ĩ☥☦☧☨☩☪☫☬☭☮☯☰☱☲☳☴☵☶☷☸☹☺☻☼☽☾☿",
+            "☀☁☂☃☄★☆☇☈☉☊☋☌☍☎☏☐☑☒☓☔☕ħĨ☘☙☚☛☜☝☞☟☠☡☢☣ĩ☥☦☧☨☩☪☫☬☭☮☯☰☱☲☳☴☵☶☷☸☹☺☻☼☽☾☿☀☁☂☃☄★☆☇☈☉☊☋☌☍☎☏☐☑☒☓☔☕ħĨ☘☙☚☛☜☝☞☟☠☡☢☣ĩ☥☦☧☨☩☪☫☬☭☮☯☰☱☲☳☴☵☶☷☸☹☺☻☼☽☾☿"
         ];
         for valid_password in valid_passwords.iter() {
-            let parsed = Password::parse(valid_password.to_string()).expect(valid_password);
+            let parsed = Password::parse(valid_password.to_string())
+                .expect(valid_password);
             assert_eq!(&parsed.as_ref(), valid_password);
         }
     }
@@ -77,8 +78,8 @@ mod tests {
     #[test]
     fn test_long_passwords() {
         let long_passwords = [
-            "abcdefghijklmnopqrstuvwxyz1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ123",
-            "☀☁☂☃☄★☆☇☈☉☊☋☌☍☎☏☐☑☒☓☔☕ħĨ☘☙☚☛☜☝☞☟☠☡☢☣ĩ☥☦☧☨☩☪☫☬☭☮☯☰☱☲☳☴☵☶☷☸☹☺☻☼☽☾☿♀",
+            "abcdefghijklmnopqrstuvwxyz1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ12abcdefghijklmnopqrstuvwxyz1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ123",
+            "☀☁☂☃☄★☆☇☈☉☊☋☌☍☎☏☐☑☒☓☔☕ħĨ☘☙☚☛☜☝☞☟☠☡☢☣ĩ☥☦☧☨☩☪☫☬☭☮☯☰☱☲☳☴☵☶☷☸☹☺☻☼☽☾☿☀☁☂☃☄★☆☇☈☉☊☋☌☍☎☏☐☑☒☓☔☕ħĨ☘☙☚☛☜☝☞☟☠☡☢☣ĩ☥☦☧☨☩☪☫☬☭☮☯☰☱☲☳☴☵☶☷☸☹☺☻☼☽☾☿♀",
         ];
         for long_password in long_passwords.iter() {
             let result = Password::parse(long_password.to_string());

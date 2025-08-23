@@ -1,6 +1,7 @@
 use crate::helpers::{get_random_email, TestApp};
 use auth_service::{
-    domain::Email, routes::TwoFactorAuthResponse, utils::constants::JWT_COOKIE_NAME, ErrorResponse,
+    domain::Email, routes::TwoFactorAuthResponse,
+    utils::constants::JWT_COOKIE_NAME, ErrorResponse,
 };
 
 #[tokio::test]
@@ -58,7 +59,8 @@ async fn should_return_206_if_valid_credentials_and_2fa_enabled() {
         .expect("Could not deserialize response body to TwoFactorAuthResponse");
     assert_eq!(json_body.message, String::from("2FA required"));
 
-    let email = Email::parse(String::from(&random_email)).expect("Failed to parse email");
+    let email = Email::parse(String::from(&random_email))
+        .expect("Failed to parse email");
 
     let (expected_id, _two_fa_code) = app
         .two_fa_code_store
@@ -126,7 +128,7 @@ async fn should_return_400_if_invalid_input() {
         }),
         serde_json::json!({
             "email": "a@b.com",
-            "password": "12345678901234567890123456789012345678901234567890123456789012345",
+            "password": "abcdefghijklmnopqrstuvwxyz1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ12abcdefghijklmnopqrstuvwxyz1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ123",
         }),
     ];
 

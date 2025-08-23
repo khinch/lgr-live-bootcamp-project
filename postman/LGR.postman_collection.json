@@ -174,7 +174,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"email\": \"set by script\",\n    \"password\": \"1234567890123456789012345678901234567890123456789012345678901234\",\n    \"requires2FA\": false\n}",
+									"raw": "{\n    \"email\": \"set by script\",\n    \"password\": \"12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678\",\n    \"requires2FA\": false\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -649,7 +649,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"email\": \"set by script\",\n    \"password\": \"12345678901234567890123456789012345678901234567890123456789012345\",\n    \"requires2FA\": false\n}",
+									"raw": "{\n    \"email\": \"set by script\",\n    \"password\": \"123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789\",\n    \"requires2FA\": false\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -966,47 +966,6 @@
 									"path": [
 										"{{auth_service_path}}",
 										"login"
-									]
-								}
-							},
-							"response": []
-						}
-					]
-				},
-				{
-					"name": "Verify 2FA",
-					"item": [
-						{
-							"name": "POST Verify 2FA",
-							"event": [
-								{
-									"listen": "test",
-									"script": {
-										"exec": [
-											"pm.test(\"Status code is 200\", function () {",
-											"    pm.response.to.have.status(200);",
-											"});"
-										],
-										"type": "text/javascript",
-										"packages": {}
-									}
-								}
-							],
-							"request": {
-								"auth": {
-									"type": "noauth"
-								},
-								"method": "POST",
-								"header": [],
-								"url": {
-									"raw": "{{protocol}}://{{base_url}}/{{auth_service_path}}/verify-2fa",
-									"protocol": "{{protocol}}",
-									"host": [
-										"{{base_url}}"
-									],
-									"path": [
-										"{{auth_service_path}}",
-										"verify-2fa"
 									]
 								}
 							},

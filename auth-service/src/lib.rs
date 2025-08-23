@@ -8,6 +8,7 @@ use axum::{
 };
 
 use serde::{Deserialize, Serialize};
+use sqlx::{postgres::PgPoolOptions, PgPool};
 use std::error::Error;
 use tokio::signal;
 use tower_http::{cors::CorsLayer, services::ServeDir};
@@ -158,4 +159,8 @@ async fn serve_app_js() -> impl IntoResponse {
             .render()
             .expect("Failed to render auth-service app.js template"),
     )
+}
+
+pub async fn get_postgres_pool(url: &str) -> Result<PgPool, sqlx::Error> {
+    PgPoolOptions::new().max_connections(5).connect(url).await
 }
