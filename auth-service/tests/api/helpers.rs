@@ -1,8 +1,13 @@
 use auth_service::{
-    app_state::{BannedTokenStoreType, TwoFACodeStoreType},
+    app_state::{AppState, BannedTokenStoreType, TwoFACodeStoreType},
+    get_postgres_pool,
     services::{
-        HashmapTwoFACodeStore, HashsetBannedTokenStore, MockEmailClient,
+        data_stores::{
+            HashmapTwoFACodeStore, HashsetBannedTokenStore, PostgresUserStore,
+        },
+        mock_email_client::MockEmailClient,
     },
+    utils::constants::{test, DATABASE_URL},
     Application,
 };
 use reqwest::cookie::Jar;
@@ -10,13 +15,6 @@ use sqlx::{postgres::PgPoolOptions, Executor, PgPool};
 use std::sync::Arc;
 use tokio::sync::RwLock;
 use uuid::Uuid;
-
-use auth_service::{
-    app_state::AppState,
-    get_postgres_pool,
-    services::PostgresUserStore,
-    utils::constants::{test, DATABASE_URL},
-};
 
 pub struct TestApp {
     pub address: String,

@@ -6,8 +6,10 @@ use auth_service::{
     app_state::AppState,
     get_postgres_pool,
     services::{
-        HashmapTwoFACodeStore, HashsetBannedTokenStore, MockEmailClient,
-        PostgresUserStore,
+        data_stores::{
+            HashmapTwoFACodeStore, HashsetBannedTokenStore, PostgresUserStore,
+        },
+        mock_email_client::MockEmailClient,
     },
     utils::constants::{prod, DATABASE_URL},
     Application,
