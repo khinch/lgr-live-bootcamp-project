@@ -1,10 +1,11 @@
 use crate::helpers::{get_random_email, TestApp};
 use auth_service::utils::constants::JWT_COOKIE_NAME;
 use serde_json::json;
+use test_context::test_context;
 
+#[test_context(TestApp)]
 #[tokio::test]
-async fn should_return_200_for_valid_token() {
-    let app = TestApp::new().await;
+async fn should_return_200_for_valid_token(app: &mut TestApp) {
     let email = get_random_email();
     let password = "password";
 
@@ -48,9 +49,9 @@ async fn should_return_200_for_valid_token() {
     );
 }
 
+#[test_context(TestApp)]
 #[tokio::test]
-async fn should_return_401_if_invalid_token() {
-    let app = TestApp::new().await;
+async fn should_return_401_if_invalid_token(app: &mut TestApp) {
     let token = format!(
         "{}=invalid; HttpOnly; SameSite=Lax; Secure; Path=/",
         JWT_COOKIE_NAME
@@ -62,9 +63,9 @@ async fn should_return_401_if_invalid_token() {
     assert_eq!(response.status().as_u16(), 401);
 }
 
+#[test_context(TestApp)]
 #[tokio::test]
-async fn should_return_422_if_malformed_input() {
-    let app = TestApp::new().await;
+async fn should_return_422_if_malformed_input(app: &mut TestApp) {
     let invalid_requests = [
         json!({"token": true}),
         json!({"token": 1}),
@@ -77,9 +78,9 @@ async fn should_return_422_if_malformed_input() {
     }
 }
 
+#[test_context(TestApp)]
 #[tokio::test]
-async fn should_return_401_if_banned_token() {
-    let app = TestApp::new().await;
+async fn should_return_401_if_banned_token(app: &mut TestApp) {
     let email = get_random_email();
     let password = "password";
 

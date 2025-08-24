@@ -1,9 +1,11 @@
 use crate::helpers::{get_random_email, TestApp};
 use auth_service::{routes::DeleteUserResponse, ErrorResponse};
 
+use test_context::test_context;
+
+#[test_context(TestApp)]
 #[tokio::test]
-async fn should_return_200_for_valid_requests() {
-    let app = TestApp::new().await;
+async fn should_return_200_for_valid_requests(app: &mut TestApp) {
     let email = get_random_email();
     let signup_request = serde_json::json!({
         "email": email,
@@ -42,9 +44,9 @@ async fn should_return_200_for_valid_requests() {
     );
 }
 
+#[test_context(TestApp)]
 #[tokio::test]
-async fn should_return_404_if_email_does_not_exists() {
-    let app = TestApp::new().await;
+async fn should_return_404_if_email_does_not_exists(app: &mut TestApp) {
     let email = get_random_email();
     let signup_request = serde_json::json!({
         "email": email,
@@ -87,10 +89,9 @@ async fn should_return_404_if_email_does_not_exists() {
     );
 }
 
+#[test_context(TestApp)]
 #[tokio::test]
-async fn should_return_422_if_malformed_input() {
-    let app = TestApp::new().await;
-
+async fn should_return_422_if_malformed_input(app: &mut TestApp) {
     let test_cases = [
         serde_json::json!({
             "email": true
@@ -114,9 +115,9 @@ async fn should_return_422_if_malformed_input() {
     }
 }
 
+#[test_context(TestApp)]
 #[tokio::test]
-async fn should_return_400_if_invalid_input() {
-    let app = TestApp::new().await;
+async fn should_return_400_if_invalid_input(app: &mut TestApp) {
     let delete_user_request = serde_json::json!({
         "email": "foobar.com"
     });

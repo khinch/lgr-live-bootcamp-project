@@ -4,9 +4,13 @@ use auth_service::{
     utils::constants::JWT_COOKIE_NAME, ErrorResponse,
 };
 
+use test_context::test_context;
+
+#[test_context(TestApp)]
 #[tokio::test]
-async fn should_return_200_if_valid_credentials_and_2fa_disabled() {
-    let app = TestApp::new().await;
+async fn should_return_200_if_valid_credentials_and_2fa_disabled(
+    app: &mut TestApp,
+) {
     let random_email = get_random_email();
     let signup_body = serde_json::json!({
         "email": random_email,
@@ -32,9 +36,11 @@ async fn should_return_200_if_valid_credentials_and_2fa_disabled() {
     assert!(!auth_cookie.value().is_empty());
 }
 
+#[test_context(TestApp)]
 #[tokio::test]
-async fn should_return_206_if_valid_credentials_and_2fa_enabled() {
-    let app = TestApp::new().await;
+async fn should_return_206_if_valid_credentials_and_2fa_enabled(
+    app: &mut TestApp,
+) {
     let random_email = get_random_email();
     let signup_body = serde_json::json!({
         "email": random_email,
@@ -76,9 +82,9 @@ async fn should_return_206_if_valid_credentials_and_2fa_enabled() {
     );
 }
 
+#[test_context(TestApp)]
 #[tokio::test]
-async fn should_return_422_if_malformed_credentials() {
-    let app = TestApp::new().await;
+async fn should_return_422_if_malformed_credentials(app: &mut TestApp) {
     let random_email = get_random_email();
 
     let test_cases = [
@@ -109,10 +115,9 @@ async fn should_return_422_if_malformed_credentials() {
     }
 }
 
+#[test_context(TestApp)]
 #[tokio::test]
-async fn should_return_400_if_invalid_input() {
-    let app = TestApp::new().await;
-
+async fn should_return_400_if_invalid_input(app: &mut TestApp) {
     let test_cases = [
         serde_json::json!({
             "email": "foobar.com",
@@ -151,9 +156,9 @@ async fn should_return_400_if_invalid_input() {
     }
 }
 
+#[test_context(TestApp)]
 #[tokio::test]
-async fn should_return_401_if_credentials_incorrect() {
-    let app = TestApp::new().await;
+async fn should_return_401_if_credentials_incorrect(app: &mut TestApp) {
     let email = get_random_email();
     let password = String::from("abcd1234");
 

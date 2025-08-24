@@ -1,10 +1,10 @@
-use auth_service::{domain::Email, utils::constants::JWT_COOKIE_NAME};
-
 use crate::helpers::{get_random_email, TestApp};
+use auth_service::{domain::Email, utils::constants::JWT_COOKIE_NAME};
+use test_context::test_context;
 
+#[test_context(TestApp)]
 #[tokio::test]
-async fn should_return_422_if_malformed_input() {
-    let app = TestApp::new().await;
+async fn should_return_422_if_malformed_input(app: &mut TestApp) {
     let random_email = get_random_email();
 
     let test_cases = [
@@ -38,9 +38,9 @@ async fn should_return_422_if_malformed_input() {
     }
 }
 
+#[test_context(TestApp)]
 #[tokio::test]
-async fn should_return_400_if_invalid_input() {
-    let app = TestApp::new().await;
+async fn should_return_400_if_invalid_input(app: &mut TestApp) {
     let random_email = get_random_email();
     let uuid = "aeeddfff-94c3-447f-8dd8-1f779c6412c9";
     let two_fa_code = "123456";
@@ -74,9 +74,9 @@ async fn should_return_400_if_invalid_input() {
     }
 }
 
+#[test_context(TestApp)]
 #[tokio::test]
-async fn should_return_401_if_incorrect_credentials() {
-    let app = TestApp::new().await;
+async fn should_return_401_if_incorrect_credentials(app: &mut TestApp) {
     let email = get_random_email();
     let password = "password";
 
@@ -139,9 +139,9 @@ async fn should_return_401_if_incorrect_credentials() {
     }
 }
 
+#[test_context(TestApp)]
 #[tokio::test]
-async fn should_return_401_if_old_code() {
-    let app = TestApp::new().await;
+async fn should_return_401_if_old_code(app: &mut TestApp) {
     let email = get_random_email();
     let parsed_email = Email::parse(email.clone()).unwrap();
     let password = "password";
@@ -204,9 +204,9 @@ async fn should_return_401_if_old_code() {
     );
 }
 
+#[test_context(TestApp)]
 #[tokio::test]
-async fn should_return_200_if_correct_code() {
-    let app = TestApp::new().await;
+async fn should_return_200_if_correct_code(app: &mut TestApp) {
     let email = get_random_email();
     let parsed_email = Email::parse(email.clone()).unwrap();
     let password = "password";
@@ -259,9 +259,9 @@ async fn should_return_200_if_correct_code() {
     assert!(!auth_cookie.value().is_empty());
 }
 
+#[test_context(TestApp)]
 #[tokio::test]
-async fn should_return_401_if_code_used_twice() {
-    let app = TestApp::new().await;
+async fn should_return_401_if_code_used_twice(app: &mut TestApp) {
     let email = get_random_email();
     let parsed_email = Email::parse(email.clone()).unwrap();
     let password = "password";
