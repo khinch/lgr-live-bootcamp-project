@@ -50,6 +50,7 @@ services:
       - db
     networks:
       proxy:
+
   db:
     image: postgres:15.2-alpine
     restart: always
@@ -59,8 +60,20 @@ services:
       - "5432:5432"
     volumes:
       - db:/var/lib/postgresql/data
+    networks:
+      proxy:
+
+  redis:
+    image: redis:7.0-alpine
+    restart: always
+    ports:
+      - "6379:6379"
+    networks:
+      proxy:
+
 networks:
   proxy:
+
 volumes:
   db:
     driver: local
