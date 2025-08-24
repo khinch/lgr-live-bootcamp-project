@@ -22,9 +22,10 @@ impl PostgresUserStore {
 #[async_trait::async_trait]
 impl UserStore for PostgresUserStore {
     async fn add_user(&mut self, user: User) -> Result<(), UserStoreError> {
-        let password_hash = compute_password_hash(user.password.as_ref())
-            .await
-            .map_err(|_| UserStoreError::UnexpectedError)?;
+        let password_hash =
+            compute_password_hash(String::from(user.password.as_ref()))
+                .await
+                .map_err(|_| UserStoreError::UnexpectedError)?;
 
         sqlx::query!(
             r#"
@@ -72,9 +73,12 @@ impl UserStore for PostgresUserStore {
         password: &Password,
     ) -> Result<(), UserStoreError> {
         let user = self.get_user(&email).await?;
-        verify_password_hash(user.password.as_ref(), password.as_ref())
-            .await
-            .map_err(|_| UserStoreError::InvalidCredentials)
+        verify_password_hash(
+            String::from(user.password.as_ref()),
+            String::from(password.as_ref()),
+        )
+        .await
+        .map_err(|_| UserStoreError::InvalidCredentials)
     }
 
     async fn delete_user(
@@ -99,44 +103,43 @@ impl UserStore for PostgresUserStore {
     }
 }
 
-// Helper function to verify if a given password matches an expected hash
-// TODO: Hashing is a CPU-intensive operation. To avoid blocking
-// other async tasks, update this function to perform hashing on a
-// separate thread pool using tokio::task::spawn_blocking. Note that you
-// will need to update the input parameters to be String types instead of &str
 async fn verify_password_hash(
-    expected_password_hash: &str,
-    password_candidate: &str,
-) -> Result<(), Box<dyn Error>> {
-    let expected_password_hash: PasswordHash<'_> =
-        PasswordHash::new(expected_password_hash)?;
+    expected_password_hash: String,
+    password_candidate: String,
+) -> Result<(), Box<dyn Error + Send + Sync>> {
+    tokio::task::spawn_blocking(move || {
+        let expected_password_hash: PasswordHash<'_> =
+            PasswordHash::new(&expected_password_hash)?;
 
-    Argon2::default()
-        .verify_password(password_candidate.as_bytes(), &expected_password_hash)
-        .map_err(|e| e.into())
+        Argon2::default()
+            .verify_password(
+                password_candidate.as_bytes(),
+                &expected_password_hash,
+            )
+            .map_err(|e| -> Box<dyn Error + Send + Sync> { e.into() })
+    })
+    .await
+    .map_err(|e| -> Box<dyn Error + Send + Sync> { e.into() })?
 }
 
-// Helper function to hash passwords before persisting them in the database.
-// TODO: Hashing is a CPU-intensive operation. To avoid blocking
-// separate thread pool using tokio::task::spawn_blocking. Note that you
-// will need to update the input parameters to be String types instead of &str
 async fn compute_password_hash(
-    password: &str,
-) -> Result<String, Box<dyn Error>> {
-    let salt: SaltString = SaltString::generate(&mut rand::thread_rng());
-    let password_hash = Argon2::new(
-        Algorithm::Argon2id,
-        Version::V0x13,
-        Params::new(15000, 2, 1, None)?,
+    password: String,
+) -> Result<String, Box<dyn Error + Send + Sync>> {
+    tokio::task::spawn_blocking(
+        move || -> Result<String, Box<dyn Error + Send + Sync>> {
+            let salt: SaltString =
+                SaltString::generate(&mut rand::thread_rng());
+            let password_hash = Argon2::new(
+                Algorithm::Argon2id,
+                Version::V0x13,
+                Params::new(15000, 2, 1, None)?,
+            )
+            .hash_password(password.as_bytes(), &salt)?
+            .to_string();
+
+            Ok(password_hash)
+        },
     )
-    .hash_password(password.as_bytes(), &salt)?
-    .to_string();
-
-    // TODO: remove debug line
-    println!(
-        "Hash Details:\n  Password: {}\n  Salt: {}\n  Hash: {}",
-        &password, &salt, &password_hash
-    );
-
-    Ok(password_hash)
+    .await
+    .map_err(|e| -> Box<dyn Error + Send + Sync> { Box::new(e) })?
 }
