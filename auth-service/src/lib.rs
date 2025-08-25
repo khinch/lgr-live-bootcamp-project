@@ -12,14 +12,14 @@ use serde::{Deserialize, Serialize};
 use sqlx::{postgres::PgPoolOptions, PgPool};
 use std::error::Error;
 use tokio::signal;
-use tower_http::{cors::CorsLayer, services::ServeDir};
+use tower_http::{cors::CorsLayer, services::ServeDir, trace::TraceLayer};
 
 use domain::AuthAPIError;
 pub mod routes;
 use crate::routes::{
     delete_user, login, logout, signup, verify_2fa, verify_token,
 };
-use crate::utils::constants::APP_SERVICE_EXTERNAL_ADDRESS;
+use crate::utils::{constants::APP_SERVICE_EXTERNAL_ADDRESS, tracing::*};
 pub mod app_state;
 pub mod domain;
 pub mod services;
@@ -100,7 +100,13 @@ impl Application {
             .route("/delete-user", delete(delete_user))
             .route("/app.js", get(serve_app_js))
             .with_state(app_state)
-            .layer(cors);
+            .layer(cors)
+            .layer(
+                TraceLayer::new_for_http()
+                    .make_span_with(make_span_with_request_id)
+                    .on_request(on_request)
+                    .on_response(on_response),
+            );
 
         let listener = tokio::net::TcpListener::bind(address).await?;
         let address = listener.local_addr()?.to_string();
@@ -110,7 +116,7 @@ impl Application {
     }
 
     pub async fn run(self) -> Result<(), std::io::Error> {
-        println!("Listening on {}", &self.address);
+        tracing::info!("listening on {}", &self.address);
         self.server.with_graceful_shutdown(shutdown_signal()).await
     }
 }
