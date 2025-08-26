@@ -11,13 +11,17 @@ use auth_service::{
         },
         mock_email_client::MockEmailClient,
     },
-    utils::{constants::{prod, DATABASE_URL, REDIS_HOST_NAME}, tracing::init_tracing},
+    utils::{
+        constants::{prod, DATABASE_URL, REDIS_HOST_NAME},
+        tracing::init_tracing,
+    },
     Application,
 };
 
 #[tokio::main]
 async fn main() {
-    init_tracing();
+    color_eyre::install().expect("Failed to install color_eyre");
+    init_tracing().expect("Failed to initialise tracing");
 
     let pg_pool = configure_postgresql().await;
     let user_store = Arc::new(RwLock::new(PostgresUserStore::new(pg_pool)));

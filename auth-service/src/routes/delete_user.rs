@@ -1,4 +1,5 @@
 use axum::{extract::State, http::StatusCode, response::IntoResponse, Json};
+use color_eyre::eyre::eyre;
 use serde::{Deserialize, Serialize};
 
 use crate::{
@@ -10,13 +11,14 @@ pub async fn delete_user(
     State(state): State<AppState>,
     Json(request): Json<DeleteUserRequest>,
 ) -> Result<impl IntoResponse, AuthAPIError> {
-    let email = Email::parse(request.email).map_err(|_| AuthAPIError::ValidationError)?;
+    let email = Email::parse(request.email)
+        .map_err(|_| AuthAPIError::ValidationError)?;
 
     {
         let mut user_store = state.user_store.write().await;
         user_store.delete_user(&email).await.map_err(|e| match e {
             UserStoreError::UserNotFound => AuthAPIError::UserNotFound,
-            _ => AuthAPIError::UnexpectedError,
+            err => AuthAPIError::UnexpectedError(eyre!(err)),
         })?;
     }
 

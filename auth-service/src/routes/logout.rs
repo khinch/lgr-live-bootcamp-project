@@ -1,5 +1,6 @@
 use axum::{extract::State, http::StatusCode, response::IntoResponse};
 use axum_extra::extract::{cookie, CookieJar};
+use color_eyre::eyre::eyre;
 
 use crate::{
     domain::AuthAPIError,
@@ -31,7 +32,9 @@ pub async fn logout(
         .await
     {
         Ok(()) => (),
-        Err(_) => return (jar, Err(AuthAPIError::UnexpectedError)),
+        Err(err) => {
+            return (jar, Err(AuthAPIError::UnexpectedError(eyre!(err))))
+        }
     }
 
     let jar = jar.remove(cookie::Cookie::from(JWT_COOKIE_NAME));

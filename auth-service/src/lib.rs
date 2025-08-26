@@ -33,6 +33,7 @@ pub struct ErrorResponse {
 
 impl IntoResponse for AuthAPIError {
     fn into_response(self) -> Response {
+        log_error_chain(&self);
         let (status, error_message) = match self {
             AuthAPIError::UserAlreadyExists => {
                 (StatusCode::CONFLICT, "User already exists")
@@ -46,7 +47,7 @@ impl IntoResponse for AuthAPIError {
             AuthAPIError::IncorrectCredentials => {
                 (StatusCode::UNAUTHORIZED, "Incorrect credentials")
             }
-            AuthAPIError::UnexpectedError => {
+            AuthAPIError::UnexpectedError(_) => {
                 (StatusCode::INTERNAL_SERVER_ERROR, "Unexpected error")
             }
             AuthAPIError::MissingToken => {
@@ -61,6 +62,19 @@ impl IntoResponse for AuthAPIError {
         });
         (status, body).into_response()
     }
+}
+
+fn log_error_chain(e: &(dyn Error + 'static)) {
+    let separator = "\n-----------------------------------------------------------------------------------\n";
+    let mut report = format!("{}{:?}\n", separator, e);
+    let mut current = e.source();
+    while let Some(cause) = current {
+        let str = format!("Caused by:\n\n{:?}", cause);
+        report = format!("{}\n{}", report, str);
+        current = cause.source();
+    }
+    report = format!("{}\n{}", report, separator);
+    tracing::error!("{}", report);
 }
 
 pub struct Application {
@@ -93,9 +107,9 @@ impl Application {
         let router = Router::new()
             .nest_service("/", ServeDir::new("assets"))
             .route("/signup", post(signup))
-            .route("/login", post(login))
-            .route("/verify-2fa", post(verify_2fa))
-            .route("/logout", post(logout))
+            // .route("/login", post(login))
+            // .route("/verify-2fa", post(verify_2fa))
+            // .route("/logout", post(logout))
             .route("/verify-token", post(verify_token))
             .route("/delete-user", delete(delete_user))
             .route("/app.js", get(serve_app_js))

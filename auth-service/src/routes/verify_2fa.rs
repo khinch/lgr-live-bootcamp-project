@@ -1,5 +1,6 @@
 use axum::{extract::State, http::StatusCode, response::IntoResponse, Json};
 use axum_extra::extract::CookieJar;
+use color_eyre::eyre::eyre;
 use serde::Deserialize;
 
 use crate::{
@@ -44,7 +45,9 @@ pub async fn verify_2fa(
 
     let auth_cookie = match generate_auth_cookie(&email) {
         Ok(cookie) => cookie,
-        Err(_) => return (jar, Err(AuthAPIError::UnexpectedError)),
+        Err(err) => {
+            return (jar, Err(AuthAPIError::UnexpectedError(eyre!(err))))
+        }
     };
 
     match state
@@ -55,7 +58,9 @@ pub async fn verify_2fa(
         .await
     {
         Ok(()) => (),
-        Err(_) => return (jar, Err(AuthAPIError::UnexpectedError)),
+        Err(err) => {
+            return (jar, Err(AuthAPIError::UnexpectedError(eyre!(err))))
+        }
     };
 
     let updated_jar = jar.add(auth_cookie);

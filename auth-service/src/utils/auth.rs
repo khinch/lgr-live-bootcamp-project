@@ -2,6 +2,7 @@ use axum_extra::extract::cookie::{Cookie, SameSite};
 use chrono::Utc;
 use jsonwebtoken::{decode, encode, DecodingKey, EncodingKey, Validation};
 use serde::{Deserialize, Serialize};
+use thiserror::Error;
 
 use crate::{
     app_state::BannedTokenStoreType,
@@ -29,9 +30,11 @@ fn create_auth_cookie(token: String) -> Cookie<'static> {
     cookie
 }
 
-#[derive(Debug)]
+#[derive(Debug, Error)]
 pub enum GenerateTokenError {
+    #[error("Error generating jwt")]
     TokenError(jsonwebtoken::errors::Error),
+    #[error("Unexpected error")]
     UnexpectedError,
 }
 
