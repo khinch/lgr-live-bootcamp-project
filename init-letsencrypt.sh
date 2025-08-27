@@ -6,7 +6,7 @@
 
 domain="lgr.testwebsitepleaseignore.uk"
 email="admin@testwebsitepleaseignore.uk"
-staging=0 # Set to 1 to test with staging environment
+staging=1 # Set to 1 to test with staging environment
 
 # Exit if certificates already exist
 if [ -f "./certbot/conf/live/$domain/fullchain.pem" ]; then
