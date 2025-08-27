@@ -108,18 +108,19 @@ jobs:
         run: sudo apt-get install sshpass
 
       - name: Copy compose.yml to droplet
-        run: sshpass -v -p '${{ secrets.DROPLET_PASSWORD }}' scp -o StrictHostKeyChecking=no compose.yml root@${{ vars.DROPLET_IP }}:~
+        run: sshpass -v -p '${{ secrets.DROPLET_PASSWORD }}' scp -P ${{ vars.DROPLET_SSH_PORT }} -o StrictHostKeyChecking=no compose.yml ${{ vars.DROPLET_SSH_USER }}@${{ vars.DROPLET_IP }}:~
       - name: Copy nginx.conf to droplet
-        run: sshpass -v -p '${{ secrets.DROPLET_PASSWORD }}' scp -o StrictHostKeyChecking=no nginx.conf root@${{ vars.DROPLET_IP }}:~
+        run: sshpass -v -p '${{ secrets.DROPLET_PASSWORD }}' scp -P ${{ vars.DROPLET_SSH_PORT }} -o StrictHostKeyChecking=no nginx.conf ${{ vars.DROPLET_SSH_USER }}@${{ vars.DROPLET_IP }}:~
       - name: Copy init-letsencrypt.sh to droplet
-        run: sshpass -v -p '${{ secrets.DROPLET_PASSWORD }}' scp -o StrictHostKeyChecking=no init-letsencrypt.sh root@${{ vars.DROPLET_IP }}:~
+        run: sshpass -v -p '${{ secrets.DROPLET_PASSWORD }}' scp -P ${{ vars.DROPLET_SSH_PORT }} -o StrictHostKeyChecking=no init-letsencrypt.sh ${{ vars.DROPLET_SSH_USER }}@${{ vars.DROPLET_IP }}:~
 
       - name: Deploy
         uses: appleboy/ssh-action@master
         with:
           host: ${{ vars.DROPLET_IP }}
-          username: root
+          username: ${{ vars.DROPLET_SSH_USER }}
           password: ${{ secrets.DROPLET_PASSWORD }}
+          port: -P ${{ vars.DROPLET_SSH_PORT }}
           script: |
             cd ~
             export JWT_SECRET=${{ secrets.JWT_SECRET }}
