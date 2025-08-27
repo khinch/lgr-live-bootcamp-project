@@ -120,7 +120,7 @@ jobs:
           host: ${{ vars.DROPLET_IP }}
           username: ${{ vars.DROPLET_SSH_USER }}
           password: ${{ secrets.DROPLET_PASSWORD }}
-          port: -P ${{ vars.DROPLET_SSH_PORT }}
+          port: ${{ vars.DROPLET_SSH_PORT }}
           script: |
             cd ~
             export JWT_SECRET=${{ secrets.JWT_SECRET }}
