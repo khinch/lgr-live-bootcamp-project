@@ -1,13 +1,15 @@
+use color_eyre::eyre::{eyre, Result};
+
 #[derive(Clone, Debug, PartialEq, serde::Serialize)]
 pub struct TwoFACode(String);
 
 impl TwoFACode {
-    pub fn parse(code: String) -> Result<Self, String> {
+    pub fn parse(code: String) -> Result<Self> {
         let regex = regex::Regex::new(r"^\d{6}$").unwrap();
         if regex.is_match(&code) {
-            Ok(TwoFACode(code))
+            Ok(Self(code))
         } else {
-            Err(String::from("Code is invalid"))
+            Err(eyre!("Code is invalid"))
         }
     }
 }
@@ -33,7 +35,8 @@ mod tests {
     fn test_valid_codes() {
         let valid_codes = ["123456", "654321", "000000", "999999"];
         for valid_code in valid_codes.iter() {
-            let parsed = TwoFACode::parse(valid_code.to_string()).expect(valid_code);
+            let parsed =
+                TwoFACode::parse(valid_code.to_string()).expect(valid_code);
             assert_eq!(
                 &parsed.as_ref(),
                 valid_code,
@@ -48,7 +51,7 @@ mod tests {
         for invalid_code in invalid_codes.iter() {
             let result = TwoFACode::parse(invalid_code.to_string());
             let error = result.expect_err(invalid_code);
-            assert_eq!(error, "Code is invalid");
+            assert_eq!(error.to_string(), "Code is invalid");
         }
     }
 }

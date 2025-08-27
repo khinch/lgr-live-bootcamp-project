@@ -1,15 +1,15 @@
-use core::convert::AsRef;
+use color_eyre::eyre::{Result, WrapErr};
 use validator::ValidationError;
 
 #[derive(Debug, PartialEq, Clone, Eq, Hash)]
 pub struct Email(String);
 
 impl Email {
-    pub fn parse(email: String) -> Result<Self, ValidationError> {
+    pub fn parse(email: String) -> Result<Self> {
         if !validator::validate_email(&email) {
             let mut error = ValidationError::new("Invalid email address");
             error.message = Some("For more details, see the spec: https://html.spec.whatwg.org/multipage/input.html#valid-e-mail-address".into());
-            return Err(error);
+            return Err(error).wrap_err("failed to parse email");
         }
 
         Ok(Email(email))
@@ -37,7 +37,8 @@ mod tests {
     fn test_valid_emails() {
         let valid_emails = ["a@b", "foo@bar.com"];
         for valid_email in valid_emails.iter() {
-            let parsed = Email::parse(valid_email.to_string()).expect(valid_email);
+            let parsed =
+                Email::parse(valid_email.to_string()).expect(valid_email);
             assert_eq!(
                 &parsed.as_ref(),
                 valid_email,
@@ -52,8 +53,14 @@ mod tests {
         for invalid_email in invalid_emails.iter() {
             let result = Email::parse(invalid_email.to_string());
             let error = result.expect_err(invalid_email);
-            assert_eq!(error.code, "Invalid email address");
-            assert_eq!(error.message.unwrap(), "For more details, see the spec: https://html.spec.whatwg.org/multipage/input.html#valid-e-mail-address");
+
+            // Downcast to get the original ValidationError
+            let validation_error = error
+                .downcast_ref::<ValidationError>()
+                .expect("Expected ValidationError");
+
+            assert_eq!(validation_error.code, "Invalid email address");
+            assert_eq!(validation_error.message.as_ref().unwrap(), "For more details, see the spec: https://html.spec.whatwg.org/multipage/input.html#valid-e-mail-address");
         }
     }
 }

@@ -1,6 +1,5 @@
 use axum::{extract::State, http::StatusCode, Json};
 use axum_extra::extract::CookieJar;
-use color_eyre::eyre::eyre;
 use serde::{Deserialize, Serialize};
 
 use crate::{
@@ -41,7 +40,7 @@ pub async fn login(
             return (jar, Err(AuthAPIError::IncorrectCredentials))
         }
         Err(err) => {
-            return (jar, Err(AuthAPIError::UnexpectedError(eyre!(err))))
+            return (jar, Err(AuthAPIError::UnexpectedError(err.into())))
         }
     }
 
@@ -82,7 +81,7 @@ async fn handle_2fa(
     {
         Ok(()) => (),
         Err(err) => {
-            return (jar, Err(AuthAPIError::UnexpectedError(eyre!(err))))
+            return (jar, Err(AuthAPIError::UnexpectedError(err.into())))
         }
     }
 
@@ -94,9 +93,7 @@ async fn handle_2fa(
         .await
     {
         Ok(()) => (),
-        Err(err) => {
-            return (jar, Err(AuthAPIError::UnexpectedError(eyre!(err))))
-        }
+        Err(err) => return (jar, Err(AuthAPIError::UnexpectedError(err))),
     }
 
     let response = Json(LoginResponse::TwoFactorAuth(TwoFactorAuthResponse {
@@ -117,7 +114,7 @@ async fn handle_no_2fa(
     let auth_cookie = match generate_auth_cookie(&email) {
         Ok(cookie) => cookie,
         Err(err) => {
-            return (jar, Err(AuthAPIError::UnexpectedError(eyre!(err))))
+            return (jar, Err(AuthAPIError::UnexpectedError(err.into())))
         }
     };
 

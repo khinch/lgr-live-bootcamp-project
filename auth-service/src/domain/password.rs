@@ -1,16 +1,17 @@
+use color_eyre::eyre::{Result, WrapErr};
 use validator::ValidationError;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Password(String);
 
 impl Password {
-    pub fn parse(password: String) -> Result<Self, ValidationError> {
+    pub fn parse(password: String) -> Result<Self> {
         match validate_password(&password) {
             Ok(()) => Ok(Password(password)),
             Err(message) => {
                 let mut error = ValidationError::new("Invalid password");
                 error.message = Some(message.into());
-                Err(error)
+                Err(error).wrap_err("failed to parse password")
             }
         }
     }
@@ -70,8 +71,18 @@ mod tests {
         for short_password in short_passwords.iter() {
             let result = Password::parse(short_password.to_string());
             let error = result.expect_err(short_password);
-            assert_eq!(error.code, "Invalid password");
-            assert!(error.message.unwrap().starts_with("Too short"));
+
+            // Downcast to get the original ValidationError
+            let validation_error = error
+                .downcast_ref::<ValidationError>()
+                .expect("Expected ValidationError");
+
+            assert_eq!(validation_error.code, "Invalid password");
+            assert!(validation_error
+                .message
+                .as_ref()
+                .unwrap()
+                .starts_with("Too short"));
         }
     }
 
@@ -84,8 +95,18 @@ mod tests {
         for long_password in long_passwords.iter() {
             let result = Password::parse(long_password.to_string());
             let error = result.expect_err(long_password);
-            assert_eq!(error.code, "Invalid password");
-            assert!(error.message.unwrap().starts_with("Too long"));
+
+            // Downcast to get the original ValidationError
+            let validation_error = error
+                .downcast_ref::<ValidationError>()
+                .expect("Expected ValidationError");
+
+            assert_eq!(validation_error.code, "Invalid password");
+            assert!(validation_error
+                .message
+                .as_ref()
+                .unwrap()
+                .starts_with("Too long"));
         }
     }
 }

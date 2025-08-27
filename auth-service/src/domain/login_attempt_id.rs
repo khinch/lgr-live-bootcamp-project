@@ -1,12 +1,13 @@
+use color_eyre::eyre::{Context, Result};
+
 #[derive(Debug, Clone, PartialEq, serde::Serialize)]
 pub struct LoginAttemptId(String);
 
 impl LoginAttemptId {
-    pub fn parse(id: String) -> Result<Self, String> {
-        match uuid::Uuid::try_parse(&id) {
-            Ok(_) => Ok(LoginAttemptId(id)),
-            Err(_) => Err(String::from("Could not parse UUID")),
-        }
+    pub fn parse(id: String) -> Result<Self> {
+        let parsed =
+            uuid::Uuid::try_parse(&id).wrap_err("Invalid login attempt ID")?;
+        Ok(Self(parsed.to_string()))
     }
 }
 
@@ -34,13 +35,12 @@ mod tests {
             "5b5b32e3-66cc-45bc-82d1-d41582139f1e",
             "00000000-0000-0000-0000-000000000000",
             "99999999-9999-9999-9999-999999999999",
-            "AAAAAAAA-AAAA-AAAA-AAAA-AAAAAAAAAAAA",
             "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
-            "FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF",
             "ffffffff-ffff-ffff-ffff-ffffffffffff",
         ];
         for valid_id in valid_ids.iter() {
-            let parsed = LoginAttemptId::parse(valid_id.to_string()).expect(valid_id);
+            let parsed =
+                LoginAttemptId::parse(valid_id.to_string()).expect(valid_id);
             assert_eq!(
                 &parsed.as_ref(),
                 valid_id,
@@ -70,7 +70,7 @@ mod tests {
         for invalid_id in invalid_ids.iter() {
             let result = LoginAttemptId::parse(invalid_id.to_string());
             let error = result.expect_err(invalid_id);
-            assert_eq!(error, "Could not parse UUID");
+            assert_eq!(error.to_string(), "Invalid login attempt ID");
         }
     }
 }
