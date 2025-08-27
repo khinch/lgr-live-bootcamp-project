@@ -49,5 +49,17 @@ docker compose run --rm --entrypoint "\
     --agree-tos \
     --force-renewal" certbot
 
+echo "### Fixing certificate permissions..."
+# Get the current user's UID and GID
+USER_ID=$(id -u)
+GROUP_ID=$(id -g)
+
+# Fix permissions on certificate files
+docker compose run --rm --entrypoint "\
+    chown -R $USER_ID:$GROUP_ID /etc/letsencrypt && \
+    chmod -R 755 /etc/letsencrypt && \
+    chmod 644 /etc/letsencrypt/live/$domain/*.pem" certbot
+
+
 echo "### Reloading nginx ..."
 docker compose exec nginx nginx -s reload
