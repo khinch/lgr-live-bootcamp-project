@@ -12,12 +12,14 @@ use crate::{
 use super::constants::{JWT_COOKIE_NAME, JWT_SECRET};
 
 // Create cookie with a new JWT auth token
+#[tracing::instrument(name = "Generating auth cookie", skip_all)]
 pub fn generate_auth_cookie(email: &Email) -> Result<Cookie<'static>> {
     let token = generate_auth_token(email)?;
     Ok(create_auth_cookie(token))
 }
 
 // Create cookie and set the value to the passed-in token string
+#[tracing::instrument(name = "Creating auth cookie", skip_all)]
 fn create_auth_cookie(token: String) -> Cookie<'static> {
     let cookie = Cookie::build((JWT_COOKIE_NAME, token))
         .path("/") // apply cookie to all URLs on the server
@@ -32,6 +34,7 @@ fn create_auth_cookie(token: String) -> Cookie<'static> {
 pub const TOKEN_TTL_SECONDS: i64 = 600; // 10 minutes
 
 // Create JWT auth token
+#[tracing::instrument(name = "Generating auth token", skip_all)]
 fn generate_auth_token(email: &Email) -> Result<String> {
     let delta = chrono::Duration::try_seconds(TOKEN_TTL_SECONDS)
         .wrap_err("Failed to create 10 minute time delta")?;
@@ -56,6 +59,7 @@ fn generate_auth_token(email: &Email) -> Result<String> {
 }
 
 // Check if JWT auth token is valid by decoding it using the JWT secret
+#[tracing::instrument(name = "Validating auth token", skip_all)]
 pub async fn validate_token(
     token: &str,
     banned_token_store: BannedTokenStoreType,
@@ -87,6 +91,7 @@ pub async fn validate_token(
 }
 
 // Create JWT auth token by encoding claims using the JWT secret
+#[tracing::instrument(name = "Creating auth token", skip_all)]
 fn create_token(claims: &Claims) -> Result<String> {
     encode(
         &jsonwebtoken::Header::default(),

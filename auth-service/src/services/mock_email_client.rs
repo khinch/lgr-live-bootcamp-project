@@ -11,7 +11,7 @@ impl EmailClient for MockEmailClient {
         subject: &str,
         content: &str,
     ) -> Result<()> {
-        tracing::debug!(
+        tracing::info!(
             "Sending email to {} with subject: {} and content: {}",
             recipient.as_ref(),
             subject,

@@ -10,6 +10,7 @@ use crate::{
     AuthAPIError,
 };
 
+#[tracing::instrument(name = "Verify 2FA route handler", skip_all)]
 pub async fn verify_2fa(
     State(state): State<AppState>,
     jar: CookieJar,

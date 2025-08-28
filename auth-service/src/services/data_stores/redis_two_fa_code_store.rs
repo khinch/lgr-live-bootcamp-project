@@ -22,6 +22,10 @@ impl RedisTwoFACodeStore {
 
 #[async_trait::async_trait]
 impl TwoFACodeStore for RedisTwoFACodeStore {
+    #[tracing::instrument(
+        name = "Adding code to Redis 2FA code store",
+        skip_all
+    )]
     async fn add_code(
         &mut self,
         email: Email,
@@ -48,6 +52,10 @@ impl TwoFACodeStore for RedisTwoFACodeStore {
         Ok(())
     }
 
+    #[tracing::instrument(
+        name = "removing code from Redis 2FA code store",
+        skip_all
+    )]
     async fn remove_code(
         &mut self,
         email: &Email,
@@ -63,6 +71,10 @@ impl TwoFACodeStore for RedisTwoFACodeStore {
         Ok(())
     }
 
+    #[tracing::instrument(
+        name = "getting code from Redis 2FA code store",
+        skip_all
+    )]
     async fn get_code(
         &self,
         email: &Email,
@@ -107,6 +119,7 @@ struct TwoFATuple(pub String, pub String);
 const TEN_MINUTES_IN_SECONDS: u64 = 600;
 const TWO_FA_CODE_PREFIX: &str = "two_fa_code:";
 
+#[tracing::instrument(name = "building key for Redis 2FA code store", skip_all)]
 fn get_key(email: &Email) -> String {
     format!("{}{}", TWO_FA_CODE_PREFIX, email.as_ref())
 }

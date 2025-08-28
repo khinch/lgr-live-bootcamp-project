@@ -7,6 +7,7 @@ use crate::{
     domain::{AuthAPIError, Email, UserStoreError},
 };
 
+#[tracing::instrument(name = "Delete user route handler", skip_all)]
 pub async fn delete_user(
     State(state): State<AppState>,
     Json(request): Json<DeleteUserRequest>,
