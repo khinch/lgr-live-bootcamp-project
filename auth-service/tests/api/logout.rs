@@ -2,6 +2,7 @@ use auth_service::{
     domain::BannedTokenStoreError, utils::constants::JWT_COOKIE_NAME,
 };
 use reqwest::Url;
+use secrecy::Secret;
 use test_context::test_context;
 
 use crate::helpers::{get_random_email, TestApp};
@@ -37,10 +38,14 @@ async fn should_return_200_if_valid_jwt_cookie(app: &mut TestApp) {
         .find(|cookie| cookie.name() == JWT_COOKIE_NAME)
         .expect("No auth cookie in jar");
 
-    let token = auth_cookie.value();
+    let token = Secret::new(auth_cookie.value().to_owned());
 
     assert_eq!(
-        app.banned_token_store.read().await.check_token(token).await,
+        app.banned_token_store
+            .read()
+            .await
+            .check_token(&token)
+            .await,
         Ok(())
     );
 
@@ -59,7 +64,11 @@ async fn should_return_200_if_valid_jwt_cookie(app: &mut TestApp) {
     assert!(auth_cookie.value().is_empty());
 
     assert_eq!(
-        app.banned_token_store.read().await.check_token(token).await,
+        app.banned_token_store
+            .read()
+            .await
+            .check_token(&token)
+            .await,
         Err(BannedTokenStoreError::BannedToken)
     );
 }

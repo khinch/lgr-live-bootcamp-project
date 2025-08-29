@@ -1,6 +1,8 @@
 use std::collections::HashMap;
 
-use crate::domain::{Email, LoginAttemptId, TwoFACode, TwoFACodeStore, TwoFACodeStoreError};
+use crate::domain::{
+    Email, LoginAttemptId, TwoFACode, TwoFACodeStore, TwoFACodeStoreError,
+};
 
 #[derive(Default)]
 pub struct HashmapTwoFACodeStore {
@@ -19,7 +21,10 @@ impl TwoFACodeStore for HashmapTwoFACodeStore {
         Ok(())
     }
 
-    async fn remove_code(&mut self, email: &Email) -> Result<(), TwoFACodeStoreError> {
+    async fn remove_code(
+        &mut self,
+        email: &Email,
+    ) -> Result<(), TwoFACodeStoreError> {
         self.codes.remove(email);
         Ok(())
     }
@@ -38,12 +43,17 @@ impl TwoFACodeStore for HashmapTwoFACodeStore {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use secrecy::Secret;
 
     fn get_test_data() -> (Email, LoginAttemptId, TwoFACode) {
-        let email = Email::parse(String::from("foo@bar.com")).expect("Could not parse email");
-        let id = LoginAttemptId::parse(String::from("b65b6b5a-cae7-436b-8196-16abcfb59e47"))
-            .expect("Could not parse LoginAttemptId");
-        let code = TwoFACode::parse(String::from("123456")).expect("Could not parse 2FA code");
+        let email = Email::parse(Secret::new(String::from("foo@bar.com")))
+            .expect("Could not parse email");
+        let id = LoginAttemptId::parse(Secret::new(String::from(
+            "b65b6b5a-cae7-436b-8196-16abcfb59e47",
+        )))
+        .expect("Could not parse LoginAttemptId");
+        let code = TwoFACode::parse(Secret::new(String::from("123456")))
+            .expect("Could not parse 2FA code");
         (email, id, code)
     }
 
@@ -122,15 +132,21 @@ mod tests {
             "Failed to add 2FA data to store"
         );
 
-        let updated_id =
-            LoginAttemptId::parse(String::from("3a6fe309-45a9-49a6-ad44-4a5411760ae3"))
-                .expect("Could not parse LoginAttemptId");
+        let updated_id = LoginAttemptId::parse(Secret::new(String::from(
+            "3a6fe309-45a9-49a6-ad44-4a5411760ae3",
+        )))
+        .expect("Could not parse LoginAttemptId");
         let updated_code =
-            TwoFACode::parse(String::from("654321")).expect("Could not parse 2FA code");
+            TwoFACode::parse(Secret::new(String::from("654321")))
+                .expect("Could not parse 2FA code");
 
         assert_eq!(
             store
-                .add_code(email.clone(), updated_id.clone(), updated_code.clone())
+                .add_code(
+                    email.clone(),
+                    updated_id.clone(),
+                    updated_code.clone()
+                )
                 .await,
             Ok(()),
             "Failed to update 2FA data in store"

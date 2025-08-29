@@ -1,5 +1,6 @@
 use axum::{extract::State, http::StatusCode, response::IntoResponse, Json};
 use color_eyre::eyre::eyre;
+use secrecy::{ExposeSecret, Secret};
 use serde::{Deserialize, Serialize};
 
 use crate::{
@@ -12,7 +13,7 @@ pub async fn delete_user(
     State(state): State<AppState>,
     Json(request): Json<DeleteUserRequest>,
 ) -> Result<impl IntoResponse, AuthAPIError> {
-    let email = Email::parse(request.email)
+    let email = Email::parse(Secret::new(request.email))
         .map_err(|_| AuthAPIError::ValidationError)?;
 
     {
@@ -23,7 +24,7 @@ pub async fn delete_user(
         })?;
     }
 
-    let message = format!("User deleted: {}", email.as_ref());
+    let message = format!("User deleted: {}", email.as_ref().expose_secret());
     let response = Json(DeleteUserResponse { message: message });
 
     Ok((StatusCode::OK, response))

@@ -1,5 +1,6 @@
 use crate::helpers::{get_random_email, TestApp};
 use auth_service::{domain::Email, utils::constants::JWT_COOKIE_NAME};
+use secrecy::{ExposeSecret, Secret};
 use test_context::test_context;
 
 #[test_context(TestApp)]
@@ -98,7 +99,7 @@ async fn should_return_401_if_incorrect_credentials(app: &mut TestApp) {
         .await;
     assert_eq!(login_response.status().as_u16(), 206);
 
-    let parsed_email = Email::parse(email.clone()).unwrap();
+    let parsed_email = Email::parse(Secret::new(email.clone())).unwrap();
 
     let (login_attempt_id, two_fa_code) = app
         .two_fa_code_store
@@ -113,17 +114,17 @@ async fn should_return_401_if_incorrect_credentials(app: &mut TestApp) {
     let invalid_2fa_requests = [
         serde_json::json!({
             "email": "foo@bar.com",
-            "loginAttemptId": login_attempt_id,
-            "2FACode": two_fa_code
+            "loginAttemptId": login_attempt_id.as_ref().expose_secret(),
+            "2FACode": two_fa_code.as_ref().expose_secret()
         }),
         serde_json::json!({
             "email": email,
             "loginAttemptId": "32bdc600-115d-4062-8649-8c558c00eb86",
-            "2FACode": two_fa_code
+            "2FACode": two_fa_code.as_ref().expose_secret()
         }),
         serde_json::json!({
             "email": email,
-            "loginAttemptId": login_attempt_id,
+            "loginAttemptId": login_attempt_id.as_ref().expose_secret(),
             "2FACode": "123456"
         }),
     ];
@@ -143,7 +144,7 @@ async fn should_return_401_if_incorrect_credentials(app: &mut TestApp) {
 #[tokio::test]
 async fn should_return_401_if_old_code(app: &mut TestApp) {
     let email = get_random_email();
-    let parsed_email = Email::parse(email.clone()).unwrap();
+    let parsed_email = Email::parse(Secret::new(email.clone())).unwrap();
     let password = "password";
 
     assert_eq!(
@@ -192,8 +193,8 @@ async fn should_return_401_if_old_code(app: &mut TestApp) {
 
     let outdated_two_fa_request = serde_json::json!({
       "email": email,
-      "loginAttemptId": second_login_attempt_id,
-      "2FACode": first_two_fa_code
+      "loginAttemptId": second_login_attempt_id.as_ref().expose_secret(),
+      "2FACode": first_two_fa_code.as_ref().expose_secret()
     });
 
     let response = app.post_verify_2fa(&outdated_two_fa_request).await;
@@ -208,7 +209,7 @@ async fn should_return_401_if_old_code(app: &mut TestApp) {
 #[tokio::test]
 async fn should_return_200_if_correct_code(app: &mut TestApp) {
     let email = get_random_email();
-    let parsed_email = Email::parse(email.clone()).unwrap();
+    let parsed_email = Email::parse(Secret::new(email.clone())).unwrap();
     let password = "password";
 
     assert_eq!(
@@ -241,8 +242,8 @@ async fn should_return_200_if_correct_code(app: &mut TestApp) {
 
     let two_fa_request = serde_json::json!({
       "email": email,
-      "loginAttemptId": login_attempt_id,
-      "2FACode": two_fa_code
+      "loginAttemptId": login_attempt_id.as_ref().expose_secret(),
+      "2FACode": two_fa_code.as_ref().expose_secret()
     });
 
     let response = app.post_verify_2fa(&two_fa_request).await;
@@ -263,7 +264,7 @@ async fn should_return_200_if_correct_code(app: &mut TestApp) {
 #[tokio::test]
 async fn should_return_401_if_code_used_twice(app: &mut TestApp) {
     let email = get_random_email();
-    let parsed_email = Email::parse(email.clone()).unwrap();
+    let parsed_email = Email::parse(Secret::new(email.clone())).unwrap();
     let password = "password";
 
     assert_eq!(
@@ -296,8 +297,8 @@ async fn should_return_401_if_code_used_twice(app: &mut TestApp) {
 
     let two_fa_request = serde_json::json!({
       "email": email,
-      "loginAttemptId": login_attempt_id,
-      "2FACode": two_fa_code
+      "loginAttemptId": login_attempt_id.as_ref().expose_secret(),
+      "2FACode": two_fa_code.as_ref().expose_secret()
     });
 
     let response = app.post_verify_2fa(&two_fa_request).await;

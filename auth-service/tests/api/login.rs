@@ -4,6 +4,7 @@ use auth_service::{
     utils::constants::JWT_COOKIE_NAME, ErrorResponse,
 };
 
+use secrecy::{ExposeSecret, Secret};
 use test_context::test_context;
 
 #[test_context(TestApp)]
@@ -65,7 +66,7 @@ async fn should_return_206_if_valid_credentials_and_2fa_enabled(
         .expect("Could not deserialize response body to TwoFactorAuthResponse");
     assert_eq!(json_body.message, String::from("2FA required"));
 
-    let email = Email::parse(String::from(&random_email))
+    let email = Email::parse(Secret::new(String::from(&random_email)))
         .expect("Failed to parse email");
 
     let (expected_id, _two_fa_code) = app
@@ -77,7 +78,7 @@ async fn should_return_206_if_valid_credentials_and_2fa_enabled(
         .expect("Failed to get 2FA data from store");
     assert_eq!(
         json_body.login_attempt_id,
-        String::from(expected_id.as_ref()),
+        String::from(expected_id.as_ref().expose_secret()),
         "2FA IDs do not match"
     );
 }

@@ -1,5 +1,6 @@
 use color_eyre::eyre::{eyre, Result, WrapErr};
 use redis::{Commands, Connection};
+use secrecy::{ExposeSecret, Secret};
 use std::sync::Arc;
 use tokio::sync::RwLock;
 
@@ -24,7 +25,7 @@ impl BannedTokenStore for RedisBannedTokenStore {
         name = "Adding token to Redis banned token store",
         skip_all
     )]
-    async fn add_token(&mut self, token: &str) -> Result<()> {
+    async fn add_token(&mut self, token: &Secret<String>) -> Result<()> {
         let key = get_key(token);
         let token_ttl_seconds: u64 = TOKEN_TTL_SECONDS
             .try_into()
@@ -44,7 +45,7 @@ impl BannedTokenStore for RedisBannedTokenStore {
     #[tracing::instrument(name = "Checking Redis banned token store", skip_all)]
     async fn check_token(
         &self,
-        token: &str,
+        token: &Secret<String>,
     ) -> Result<(), BannedTokenStoreError> {
         let key = get_key(&token);
         match self.conn.write().await.exists(&key) {
@@ -62,6 +63,6 @@ impl BannedTokenStore for RedisBannedTokenStore {
 // We are using a key prefix to prevent collisions and organize data!
 const BANNED_TOKEN_KEY_PREFIX: &str = "banned_token:";
 
-fn get_key(token: &str) -> String {
-    format!("{}{}", BANNED_TOKEN_KEY_PREFIX, token)
+fn get_key(token: &Secret<String>) -> String {
+    format!("{}{}", BANNED_TOKEN_KEY_PREFIX, token.expose_secret())
 }

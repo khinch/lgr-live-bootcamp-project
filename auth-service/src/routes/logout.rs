@@ -1,6 +1,7 @@
 use axum::{extract::State, http::StatusCode, response::IntoResponse};
 use axum_extra::extract::{cookie, CookieJar};
 use color_eyre::eyre::eyre;
+use secrecy::Secret;
 
 use crate::{
     domain::AuthAPIError,
@@ -18,7 +19,7 @@ pub async fn logout(
         None => return (jar, Err(AuthAPIError::MissingToken)),
     };
 
-    let token = cookie.value().to_string();
+    let token = Secret::new(cookie.value().to_string());
 
     match validate_token(&token, state.banned_token_store.clone()).await {
         Ok(_) => (),

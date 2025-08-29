@@ -1,4 +1,5 @@
 use color_eyre::eyre::Result;
+use secrecy::{ExposeSecret, Secret};
 use std::collections::HashSet;
 
 use crate::domain::{BannedTokenStore, BannedTokenStoreError};
@@ -10,16 +11,16 @@ pub struct HashsetBannedTokenStore {
 
 #[async_trait::async_trait]
 impl BannedTokenStore for HashsetBannedTokenStore {
-    async fn add_token(&mut self, token: &str) -> Result<()> {
-        self.banned_tokens.insert(String::from(token));
+    async fn add_token(&mut self, token: &Secret<String>) -> Result<()> {
+        self.banned_tokens.insert(token.expose_secret().to_owned());
         Ok(())
     }
 
     async fn check_token(
         &self,
-        token: &str,
+        token: &Secret<String>,
     ) -> Result<(), BannedTokenStoreError> {
-        if self.banned_tokens.contains(token) {
+        if self.banned_tokens.contains(token.expose_secret()) {
             Err(BannedTokenStoreError::BannedToken)
         } else {
             Ok(())
@@ -34,7 +35,7 @@ mod tests {
     #[tokio::test]
     async fn test_add_token() {
         let mut banned_tokens = HashsetBannedTokenStore::default();
-        let token = "token";
+        let token = Secret::new("token".to_owned());
 
         assert!(
             banned_tokens.add_token(&token).await.is_ok(),
@@ -49,7 +50,7 @@ mod tests {
     #[tokio::test]
     async fn test_get_user() {
         let mut banned_tokens = HashsetBannedTokenStore::default();
-        let token = "token";
+        let token = Secret::new("token".to_owned());
 
         assert!(
             banned_tokens.check_token(&token).await.is_ok(),

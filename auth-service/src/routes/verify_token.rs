@@ -1,4 +1,5 @@
 use axum::{extract::State, http::StatusCode, response::IntoResponse, Json};
+use secrecy::Secret;
 use serde::Deserialize;
 
 use crate::{app_state::AppState, utils::auth::validate_token, AuthAPIError};
@@ -8,7 +9,7 @@ pub async fn verify_token(
     State(state): State<AppState>,
     Json(request): Json<VerifyTokenRequest>,
 ) -> Result<impl IntoResponse, AuthAPIError> {
-    let token = request.token;
+    let token = Secret::new(request.token);
     let _claims = validate_token(&token, state.banned_token_store.clone())
         .await
         .map_err(|_| AuthAPIError::InvalidToken)?;

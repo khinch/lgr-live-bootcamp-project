@@ -1,5 +1,6 @@
 use axum::{extract::State, http::StatusCode, Json};
 use axum_extra::extract::CookieJar;
+use secrecy::{ExposeSecret, Secret};
 use serde::{Deserialize, Serialize};
 
 use crate::{
@@ -20,7 +21,7 @@ pub async fn login(
     CookieJar,
     Result<(StatusCode, Json<LoginResponse>), AuthAPIError>,
 ) {
-    let email = match Email::parse(request.email) {
+    let email = match Email::parse(Secret::new(request.email)) {
         Ok(email) => email,
         Err(_) => return (jar, Err(AuthAPIError::ValidationError)),
     };
@@ -59,7 +60,7 @@ pub async fn login(
 #[derive(Deserialize)]
 pub struct LoginRequest {
     pub email: String,
-    pub password: String,
+    pub password: Secret<String>,
 }
 
 #[tracing::instrument(name = "Handling 2FA login", skip_all)]
@@ -91,7 +92,11 @@ async fn handle_2fa(
         .email_client
         .read()
         .await
-        .send_email(&email, "LGR Bootcamp 2FA Code", two_fa_code.as_ref())
+        .send_email(
+            &email,
+            "LGR Bootcamp 2FA Code",
+            two_fa_code.as_ref().expose_secret(),
+        )
         .await
     {
         Ok(()) => (),
@@ -100,7 +105,9 @@ async fn handle_2fa(
 
     let response = Json(LoginResponse::TwoFactorAuth(TwoFactorAuthResponse {
         message: String::from("2FA required"),
-        login_attempt_id: String::from(login_attempt_id.as_ref()),
+        login_attempt_id: String::from(
+            login_attempt_id.as_ref().expose_secret(),
+        ),
     }));
 
     (jar, Ok((StatusCode::PARTIAL_CONTENT, response)))

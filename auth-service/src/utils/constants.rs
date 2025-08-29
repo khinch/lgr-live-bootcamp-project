@@ -1,9 +1,10 @@
 use dotenvy::dotenv;
 use lazy_static::lazy_static;
+use secrecy::Secret;
 use std::env as std_env;
 
 lazy_static! {
-    pub static ref JWT_SECRET: String = set_token();
+    pub static ref JWT_SECRET: Secret<String> = set_token();
     pub static ref APP_SERVICE_EXTERNAL_ADDRESS: String = load_or_default(
         "APP_SERVICE_EXTERNAL_ADDRESS",
         "http://localhost:8000"
@@ -12,7 +13,7 @@ lazy_static! {
         "APP_SERVICE_CONTAINER_ADDRESS",
         "http://localhost:8000"
     );
-    pub static ref DATABASE_URL: String = get_db_url();
+    pub static ref DATABASE_URL: Secret<String> = get_db_url();
     pub static ref REDIS_HOST_NAME: String = set_redis_host();
 }
 
@@ -20,24 +21,24 @@ fn load_env() {
     dotenv().ok();
 }
 
-fn set_token() -> String {
+fn set_token() -> Secret<String> {
     load_env();
     let secret =
         std_env::var(env::JWT_SECRET_ENV_VAR).expect("JWT_SECRET must be set.");
     if secret.is_empty() {
         panic!("JWT_SECRET must not be empty.");
     }
-    secret
+    Secret::new(secret)
 }
 
-fn get_db_url() -> String {
+fn get_db_url() -> Secret<String> {
     load_env();
     let db_url =
         std_env::var("DATABASE_URL").expect("DATABASE_URL must be set.");
     if db_url.is_empty() {
         panic!("DATABASE_URL must not be empty.");
     }
-    db_url
+    Secret::new(db_url)
 }
 
 fn load_or_default(variable_name: &str, default_value: &str) -> String {

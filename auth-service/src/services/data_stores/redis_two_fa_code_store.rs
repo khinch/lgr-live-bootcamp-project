@@ -1,7 +1,8 @@
-use std::sync::Arc;
+use std::{sync::Arc, u64};
 
 use color_eyre::eyre::{eyre, WrapErr};
 use redis::{Commands, Connection};
+use secrecy::{ExposeSecret, Secret};
 use serde::{Deserialize, Serialize};
 use serde_json;
 use tokio::sync::RwLock;
@@ -35,8 +36,8 @@ impl TwoFACodeStore for RedisTwoFACodeStore {
         let key = get_key(&email);
 
         let two_fa_details = TwoFATuple(
-            login_attempt_id.as_ref().to_owned(),
-            code.as_ref().to_owned(),
+            login_attempt_id.as_ref().expose_secret().to_owned(),
+            code.as_ref().expose_secret().to_owned(),
         );
 
         let two_fa_details = serde_json::to_string(&two_fa_details)
@@ -103,9 +104,9 @@ impl TwoFACodeStore for RedisTwoFACodeStore {
                 .map_err(TwoFACodeStoreError::UnexpectedError)?;
 
         let (login_attempt_id, code) = (
-            LoginAttemptId::parse(two_fa_details.0)
+            LoginAttemptId::parse(Secret::new(two_fa_details.0))
                 .map_err(|e| TwoFACodeStoreError::UnexpectedError(eyre!(e)))?,
-            TwoFACode::parse(two_fa_details.1)
+            TwoFACode::parse(Secret::new(two_fa_details.1))
                 .map_err(|e| TwoFACodeStoreError::UnexpectedError(eyre!(e)))?,
         );
 
@@ -121,5 +122,5 @@ const TWO_FA_CODE_PREFIX: &str = "two_fa_code:";
 
 #[tracing::instrument(name = "building key for Redis 2FA code store", skip_all)]
 fn get_key(email: &Email) -> String {
-    format!("{}{}", TWO_FA_CODE_PREFIX, email.as_ref())
+    format!("{}{}", TWO_FA_CODE_PREFIX, email.as_ref().expose_secret())
 }

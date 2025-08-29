@@ -1,6 +1,5 @@
-use std::collections::HashMap;
-
 use crate::domain::{Email, Password, User, UserStore, UserStoreError};
+use std::collections::HashMap;
 
 #[derive(Default)]
 pub struct HashmapUserStore {
@@ -54,17 +53,19 @@ impl UserStore for HashmapUserStore {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use secrecy::{ExposeSecret, Secret};
 
     fn get_test_users() -> Vec<User> {
         vec![
             User::new(
-                Email::parse("test@example.com".to_string()).unwrap(),
-                Password::parse("P@55w0rd".to_string()).unwrap(),
+                Email::parse(Secret::new("test@example.com".to_string()))
+                    .unwrap(),
+                Password::parse(Secret::new("P@55w0rd".to_string())).unwrap(),
                 true,
             ),
             User::new(
-                Email::parse("foo@bar.com".to_string()).unwrap(),
-                Password::parse("ABCD1234".to_string()).unwrap(),
+                Email::parse(Secret::new("foo@bar.com".to_string())).unwrap(),
+                Password::parse(Secret::new("ABCD1234".to_string())).unwrap(),
                 false,
             ),
         ]
@@ -105,7 +106,7 @@ mod tests {
         }
 
         let non_existent_user =
-            Email::parse("no@email.com".to_string()).unwrap();
+            Email::parse(Secret::new("no@email.com".to_string())).unwrap();
         assert_eq!(
             users.get_user(&non_existent_user).await,
             Err(UserStoreError::UserNotFound),
@@ -116,13 +117,14 @@ mod tests {
     #[tokio::test]
     async fn test_validate_user() {
         let mut users = HashmapUserStore::default();
-        let existent_email = Email::parse("foo@bar.com".to_string()).unwrap();
+        let existent_email =
+            Email::parse(Secret::new("foo@bar.com".to_string())).unwrap();
         let non_existent_email =
-            Email::parse("lorem@ipsum.com".to_string()).unwrap();
+            Email::parse(Secret::new("lorem@ipsum.com".to_string())).unwrap();
         let existent_password =
-            Password::parse("P@55w0rd".to_string()).unwrap();
+            Password::parse(Secret::new("P@55w0rd".to_string())).unwrap();
         let non_existent_password =
-            Password::parse("P155w0rd".to_string()).unwrap();
+            Password::parse(Secret::new("P155w0rd".to_string())).unwrap();
 
         users
             .add_user(User::new(
@@ -163,8 +165,8 @@ mod tests {
         let mut users = HashmapUserStore::default();
 
         let user = User::new(
-            Email::parse("test@example.com".to_string()).unwrap(),
-            Password::parse("P@55w0rd".to_string()).unwrap(),
+            Email::parse(Secret::new("test@example.com".to_string())).unwrap(),
+            Password::parse(Secret::new("P@55w0rd".to_string())).unwrap(),
             true,
         );
 
@@ -173,7 +175,7 @@ mod tests {
             users
                 .add_user(user.clone())
                 .await
-                .expect(user.email.as_ref());
+                .expect(user.email.as_ref().expose_secret());
 
             assert_eq!(
                 users.delete_user(&user.email).await,

@@ -1,6 +1,7 @@
 use axum::{extract::State, http::StatusCode, response::IntoResponse, Json};
 use axum_extra::extract::CookieJar;
 use color_eyre::eyre::eyre;
+use secrecy::Secret;
 use serde::Deserialize;
 
 use crate::{
@@ -16,18 +17,18 @@ pub async fn verify_2fa(
     jar: CookieJar,
     Json(request): Json<Verify2FARequest>,
 ) -> (CookieJar, Result<impl IntoResponse, AuthAPIError>) {
-    let email = match Email::parse(request.email) {
+    let email = match Email::parse(Secret::new(request.email)) {
         Ok(email) => email,
         Err(_) => return (jar, Err(AuthAPIError::ValidationError)),
     };
 
-    let login_attempt_id = match LoginAttemptId::parse(request.login_attempt_id)
-    {
-        Ok(login_attempt_id) => login_attempt_id,
-        Err(_) => return (jar, Err(AuthAPIError::ValidationError)),
-    };
+    let login_attempt_id =
+        match LoginAttemptId::parse(Secret::new(request.login_attempt_id)) {
+            Ok(login_attempt_id) => login_attempt_id,
+            Err(_) => return (jar, Err(AuthAPIError::ValidationError)),
+        };
 
-    let two_fa_code = match TwoFACode::parse(request.two_fa_code) {
+    let two_fa_code = match TwoFACode::parse(Secret::new(request.two_fa_code)) {
         Ok(two_fa_code) => two_fa_code,
         Err(_) => return (jar, Err(AuthAPIError::ValidationError)),
     };

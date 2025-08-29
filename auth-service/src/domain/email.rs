@@ -1,23 +1,40 @@
 use color_eyre::eyre::{Result, WrapErr};
+use secrecy::{ExposeSecret, Secret};
 use validator::ValidationError;
 
-#[derive(Debug, PartialEq, Clone, Eq, Hash)]
-pub struct Email(String);
+use std::hash::Hash;
+
+#[derive(Debug, Clone)]
+pub struct Email(Secret<String>);
+
+impl PartialEq for Email {
+    fn eq(&self, other: &Self) -> bool {
+        self.0.expose_secret() == other.0.expose_secret()
+    }
+}
+
+impl Hash for Email {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.0.expose_secret().hash(state);
+    }
+}
+
+impl Eq for Email {}
 
 impl Email {
-    pub fn parse(email: String) -> Result<Self> {
-        if !validator::validate_email(&email) {
+    pub fn parse(s: Secret<String>) -> Result<Self> {
+        if !validator::validate_email(s.expose_secret()) {
             let mut error = ValidationError::new("Invalid email address");
             error.message = Some("For more details, see the spec: https://html.spec.whatwg.org/multipage/input.html#valid-e-mail-address".into());
             return Err(error).wrap_err("failed to parse email");
         }
 
-        Ok(Email(email))
+        Ok(Self(s))
     }
 }
 
-impl AsRef<str> for Email {
-    fn as_ref(&self) -> &str {
+impl AsRef<Secret<String>> for Email {
+    fn as_ref(&self) -> &Secret<String> {
         &self.0
     }
 }
@@ -25,6 +42,8 @@ impl AsRef<str> for Email {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use fake::faker::internet::en::SafeEmail;
+    use fake::Fake;
 
     /*
      * Validation is performed by the `validator` library.
@@ -37,11 +56,11 @@ mod tests {
     fn test_valid_emails() {
         let valid_emails = ["a@b", "foo@bar.com"];
         for valid_email in valid_emails.iter() {
-            let parsed =
-                Email::parse(valid_email.to_string()).expect(valid_email);
+            let secret_email = Secret::new(valid_email.to_string());
+            let parsed = Email::parse(secret_email).expect(valid_email);
             assert_eq!(
-                &parsed.as_ref(),
-                valid_email,
+                parsed.as_ref().expose_secret().to_string(),
+                valid_email.to_string(),
                 "Email does not match expected value"
             );
         }
@@ -49,9 +68,10 @@ mod tests {
 
     #[test]
     fn test_invalid_emails() {
-        let invalid_emails = ["ab.com", "foo.bar"];
+        let invalid_emails = ["", "@bar.com", "ab.com", "foo.bar"];
         for invalid_email in invalid_emails.iter() {
-            let result = Email::parse(invalid_email.to_string());
+            let secret_email = Secret::new(invalid_email.to_string());
+            let result = Email::parse(secret_email);
             let error = result.expect_err(invalid_email);
 
             // Downcast to get the original ValidationError
@@ -62,5 +82,22 @@ mod tests {
             assert_eq!(validation_error.code, "Invalid email address");
             assert_eq!(validation_error.message.as_ref().unwrap(), "For more details, see the spec: https://html.spec.whatwg.org/multipage/input.html#valid-e-mail-address");
         }
+    }
+
+    #[derive(Debug, Clone)]
+    struct ValidEmailFixture(pub String);
+
+    impl quickcheck::Arbitrary for ValidEmailFixture {
+        fn arbitrary<G: quickcheck::Gen>(g: &mut G) -> Self {
+            let email = SafeEmail().fake_with_rng(g);
+            Self(email)
+        }
+    }
+
+    #[quickcheck_macros::quickcheck]
+    fn valid_emails_are_parsed_successfully(
+        valid_email: ValidEmailFixture,
+    ) -> bool {
+        Email::parse(Secret::new(valid_email.0)).is_ok() // Updated!
     }
 }
