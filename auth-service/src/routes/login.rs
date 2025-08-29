@@ -90,8 +90,6 @@ async fn handle_2fa(
 
     match state
         .email_client
-        .read()
-        .await
         .send_email(
             &email,
             "LGR Bootcamp 2FA Code",

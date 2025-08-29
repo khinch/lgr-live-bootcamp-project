@@ -6,6 +6,7 @@ use auth_service::{
 
 use secrecy::{ExposeSecret, Secret};
 use test_context::test_context;
+use wiremock::{matchers::method, matchers::path, Mock, ResponseTemplate};
 
 #[test_context(TestApp)]
 #[tokio::test]
@@ -51,6 +52,13 @@ async fn should_return_206_if_valid_credentials_and_2fa_enabled(
 
     let response = app.post_signup(&signup_body).await;
     assert_eq!(response.status().as_u16(), 201);
+
+    Mock::given(path("/email"))
+        .and(method("POST"))
+        .respond_with(ResponseTemplate::new(200))
+        .expect(1)
+        .mount(&app.email_server)
+        .await;
 
     let login_body = serde_json::json!({
         "email": random_email,

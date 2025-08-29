@@ -2,6 +2,7 @@ use crate::helpers::{get_random_email, TestApp};
 use auth_service::{domain::Email, utils::constants::JWT_COOKIE_NAME};
 use secrecy::{ExposeSecret, Secret};
 use test_context::test_context;
+use wiremock::{matchers::method, matchers::path, Mock, ResponseTemplate};
 
 #[test_context(TestApp)]
 #[tokio::test]
@@ -91,6 +92,13 @@ async fn should_return_401_if_incorrect_credentials(app: &mut TestApp) {
         201
     );
 
+    Mock::given(path("/email"))
+        .and(method("POST"))
+        .respond_with(ResponseTemplate::new(200))
+        .expect(1)
+        .mount(&app.email_server)
+        .await;
+
     let login_response = app
         .post_login(&serde_json::json!({
             "email": email,
@@ -159,6 +167,13 @@ async fn should_return_401_if_old_code(app: &mut TestApp) {
         201
     );
 
+    Mock::given(path("/email"))
+        .and(method("POST"))
+        .respond_with(ResponseTemplate::new(200))
+        .expect(2)
+        .mount(&app.email_server)
+        .await;
+
     let login_response = app
         .post_login(&serde_json::json!({
             "email": email,
@@ -224,6 +239,13 @@ async fn should_return_200_if_correct_code(app: &mut TestApp) {
         201
     );
 
+    Mock::given(path("/email"))
+        .and(method("POST"))
+        .respond_with(ResponseTemplate::new(200))
+        .expect(1)
+        .mount(&app.email_server)
+        .await;
+
     let login_response = app
         .post_login(&serde_json::json!({
             "email": email,
@@ -278,6 +300,13 @@ async fn should_return_401_if_code_used_twice(app: &mut TestApp) {
         .as_u16(),
         201
     );
+
+    Mock::given(path("/email"))
+        .and(method("POST"))
+        .respond_with(ResponseTemplate::new(200))
+        .expect(1)
+        .mount(&app.email_server)
+        .await;
 
     let login_response = app
         .post_login(&serde_json::json!({

@@ -14,11 +14,31 @@ lazy_static! {
         "http://localhost:8000"
     );
     pub static ref DATABASE_URL: Secret<String> = get_db_url();
+    pub static ref POSTMARK_AUTH_TOKEN: Secret<String> =
+        set_postmark_auth_token();
+    pub static ref POSTMARK_EMAIL_SENDER_ADDRESS: Secret<String> =
+        set_postmark_email_sender_address();
     pub static ref REDIS_HOST_NAME: String = set_redis_host();
 }
 
 fn load_env() {
     dotenv().ok();
+}
+
+fn set_postmark_auth_token() -> Secret<String> {
+    load_env();
+    Secret::new(
+        std_env::var(env::POSTMARK_AUTH_TOKEN_ENV_VAR)
+            .expect("POSTMARK_AUTH_TOKEN must be set"),
+    )
+}
+
+fn set_postmark_email_sender_address() -> Secret<String> {
+    dotenv().ok();
+    Secret::new(
+        std_env::var(env::POSTMARK_EMAIL_SENDER_ADDRESS_ENV_VAR)
+            .expect("POSTMARK_EMAIL_SENDER_ADDRESS must be set"),
+    )
 }
 
 fn set_token() -> Secret<String> {
@@ -65,6 +85,9 @@ fn set_redis_host() -> String {
 pub mod env {
     pub const DATABASE_URL_ENV_VAR: &str = "DATABASE_URL";
     pub const JWT_SECRET_ENV_VAR: &str = "JWT_SECRET";
+    pub const POSTMARK_AUTH_TOKEN_ENV_VAR: &str = "POSTMARK_AUTH_TOKEN";
+    pub const POSTMARK_EMAIL_SENDER_ADDRESS_ENV_VAR: &str =
+        "POSTMARK_EMAIL_SENDER_ADDRESS";
     pub const REDIS_HOST_NAME_ENV_VAR: &str = "REDIS_HOST_NAME";
 }
 
@@ -73,8 +96,20 @@ pub const DEFAULT_REDIS_HOSTNAME: &str = "127.0.0.1";
 
 pub mod prod {
     pub const APP_ADDRESS: &str = "0.0.0.0:3000";
+    pub mod email_client {
+        use std::time::Duration;
+
+        pub const BASE_URL: &str = "https://api.postmarkapp.com/email";
+        pub const TIMEOUT: Duration = std::time::Duration::from_secs(10);
+    }
 }
 
 pub mod test {
     pub const APP_ADDRESS: &str = "127.0.0.1:0";
+    pub mod email_client {
+        use std::time::Duration;
+
+        // pub const SENDER: &str = "test@email.com";
+        pub const TIMEOUT: Duration = std::time::Duration::from_millis(200);
+    }
 }
