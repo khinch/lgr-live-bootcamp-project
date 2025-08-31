@@ -1,19 +1,7 @@
-import { type Page } from "@playwright/test";
-import { waitForAllToBeVisible } from "../../utils/playwrightUtils";
+import BasePage from "../common/BasePage";
 import LoginPage from "./LoginPage";
-import Navbar from "../common/Navbar";
 
-export default class TwoFaPage {
-  /**
-   * @param {import('playwright').Page} page
-   */
-
-  readonly page: Page;
-
-  constructor(page: Page) {
-    this.page = page;
-  }
-
+export default class TwoFaPage extends BasePage {
   /*
    *********************
    *** Page Elements ***
@@ -37,10 +25,8 @@ export default class TwoFaPage {
    ********************
    */
   async waitForPageLoad() {
-    await this.page.waitForLoadState("networkidle");
-    let navbar: Navbar = new Navbar(this.page);
-    let locators = [navbar.title, this.twoFaForm().verifyButton()];
-    await waitForAllToBeVisible(locators);
+    let locators = [this.navbar.title, this.twoFaForm().verifyButton()];
+    super.waitForPageLoad(locators);
   }
 
   async goToLoginPage() {

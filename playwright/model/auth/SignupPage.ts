@@ -1,21 +1,7 @@
-import { expect, type Locator, type Page } from "@playwright/test";
-import { waitForAllToBeVisible } from "../../utils/playwrightUtils";
+import BasePage from "../common/BasePage";
 import LoginPage from "../auth/LoginPage";
-import Navbar from "../common/Navbar";
 
-export default class SignupPage {
-  /**
-   * @param {import('playwright').Page} page
-   */
-
-  readonly page: Page;
-  readonly navbar: Navbar;
-
-  constructor(page: Page) {
-    this.page = page;
-    this.navbar = new Navbar(page);
-  }
-
+export default class SignupPage extends BasePage {
   /*
    *********************
    *** Page Elements ***
@@ -43,9 +29,8 @@ export default class SignupPage {
    ********************
    */
   async waitForPageLoad() {
-    await this.page.waitForLoadState("networkidle");
     let locators = [this.navbar.title, this.signupForm().signupButton()];
-    await waitForAllToBeVisible(locators);
+    super.waitForPageLoad(locators);
   }
 
   async goToLoginPage() {

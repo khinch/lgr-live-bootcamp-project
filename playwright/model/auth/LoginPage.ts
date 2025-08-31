@@ -1,24 +1,11 @@
-import { type APIRequestContext, type Page } from "@playwright/test";
-import { waitForAllToBeVisible } from "../../utils/playwrightUtils";
+import { type APIRequestContext } from "@playwright/test";
 import AppPage from "../app/AppPage";
-import Navbar from "../common/Navbar";
+import BasePage from "../common/BasePage";
 import SignupPage from "./SignupPage";
 import TwoFaPage from "./TwoFaPage";
 import { retrieveTwoFaCode } from "../../utils/apiUtils";
 
-export default class LoginPage {
-  /**
-   * @param {import('playwright').Page} page
-   */
-
-  readonly page: Page;
-  readonly navbar: Navbar;
-
-  constructor(page: Page) {
-    this.page = page;
-    this.navbar = new Navbar(page);
-  }
-
+export default class LoginPage extends BasePage {
   /*
    *********************
    *** Page Elements ***
@@ -47,9 +34,8 @@ export default class LoginPage {
   }
 
   async waitForPageLoad() {
-    await this.page.waitForLoadState("networkidle");
     let locators = [this.navbar.title, this.loginForm().loginButton()];
-    await waitForAllToBeVisible(locators);
+    await super.waitForPageLoad(locators);
   }
 
   async goToSignupPage() {
