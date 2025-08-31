@@ -1,0 +1,20 @@
+{
+  "pageTitle": "Auth",
+  "navbar": {
+    "title": "Auth Service"
+  },
+  "loginForm": {
+    "heading": "Sign up",
+    "emailPlaceholder": "Email",
+    "passwordPlaceholder": "Password",
+    "2faLabel": "Require 2-factor email authentication",
+    "signupButtonText": "Sign up",
+    "alreadyHaveAccountLabel": "Already have an account?",
+    "LoginLinkText": "Log in here"
+  },
+  "errorMessages": {
+    "invalidCredentials": "Error: Invalid input",
+    "userExists": "Error: User already exists",
+    "serverError": "Unexpected error"
+  }
+}

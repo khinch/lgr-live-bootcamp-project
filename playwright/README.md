@@ -1,0 +1,11 @@
+# TODO 
+- package.json scripts
+- Document test structure
+- Document test approach
+- Component tests
+  - fixtures
+  - pipelines
+- Visual tests
+  - pipelines
+- Scenario tests
+  - pipelines
