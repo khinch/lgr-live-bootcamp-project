@@ -2,7 +2,7 @@ import { Locator, Page } from "@playwright/test";
 import Navbar from "./Navbar";
 import { waitForAllToBeVisible } from "../../utils/playwrightUtils";
 
-export default abstract class BasePage {
+export abstract class BasePage {
   /**
    * @param {import('playwright').Page} page
    */
@@ -21,3 +21,5 @@ export default abstract class BasePage {
     await this.page.waitForLoadState("networkidle");
   }
 }
+
+export default BasePage;
