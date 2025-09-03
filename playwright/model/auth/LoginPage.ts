@@ -30,7 +30,8 @@ export default class LoginPage extends BasePage {
    ********************
    */
   async navigateToPage() {
-    await this.page.goto("http://localhost:5000/auth/");
+    await this.page.goto("/auth/");
+    await this.waitForPageLoad();
   }
 
   async waitForPageLoad() {

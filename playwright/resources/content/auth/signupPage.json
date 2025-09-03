@@ -3,11 +3,11 @@
   "navbar": {
     "title": "Auth Service"
   },
-  "loginForm": {
+  "signupForm": {
     "heading": "Sign up",
     "emailPlaceholder": "Email",
     "passwordPlaceholder": "Password",
-    "2faLabel": "Require 2-factor email authentication",
+    "twoFaLabel": "Require 2-factor email authentication",
     "signupButtonText": "Sign up",
     "alreadyHaveAccountLabel": "Already have an account?",
     "LoginLinkText": "Log in here"

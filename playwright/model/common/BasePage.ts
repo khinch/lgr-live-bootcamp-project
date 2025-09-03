@@ -8,7 +8,7 @@ export abstract class BasePage {
    */
 
   protected readonly page: Page;
-  protected readonly navbar: Navbar;
+  public readonly navbar: Navbar;
 
   constructor(page: Page) {
     this.page = page;

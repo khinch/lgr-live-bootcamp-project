@@ -19,7 +19,7 @@ export default class SignupPage extends BasePage {
       alreadyHaveAccountlabel: () =>
         signupForm.getByTestId("alreadyHaveAccountLabel"),
       loginLink: () => signupForm.locator("#signup-login-link"),
-      error: () => signupForm.locator("#login-err-alert"),
+      error: () => signupForm.locator("#signup-err-alert"),
     };
   }
 
@@ -30,7 +30,13 @@ export default class SignupPage extends BasePage {
    */
   async waitForPageLoad() {
     let locators = [this.navbar.title, this.signupForm().signupButton()];
-    super.waitForPageLoad(locators);
+    await super.waitForPageLoad(locators);
+  }
+
+  async navigateToPage() {
+    let loginPage: LoginPage = new LoginPage(this.page);
+    await loginPage.navigateToPage();
+    await loginPage.goToSignupPage();
   }
 
   async goToLoginPage() {

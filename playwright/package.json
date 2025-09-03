@@ -1,14 +1,16 @@
 {
-  "name": "playwright",
+  "name": "lgr_accelerator_application_tests",
   "version": "1.0.0",
-  "description": "",
+  "description": "UI component and system tests for LGR Accelerator application",
   "main": "index.js",
   "scripts": {
-    "test": "npx playwright test",
-    "test-ui": "npx playwright test --ui"
+    "test-component": "npx playwright test --project=component --project=visual-chrome --project=visual-firefox --project=visual-webkit",
+    "test-system": "npx playwright test --project=system",
+    "test-ui": "npx playwright test --ui",
+    "test-update-snapshots": "npx playwright test --update-snapshots --project=visual-chrome --project=visual-firefox --project=visual-webkit"
   },
   "keywords": [],
-  "author": "",
+  "author": "Kieren Hinch",
   "license": "ISC",
   "type": "commonjs",
   "devDependencies": {
