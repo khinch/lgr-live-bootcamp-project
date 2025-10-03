@@ -1,0 +1,18 @@
+{
+  "pageTitle": "Auth",
+  "navbar": {
+    "title": "Auth Service"
+  },
+  "twoFaForm": {
+    "heading": "Verification Code",
+    "twoFaPlaceholder": "123456",
+    "verifyButtonText": "Verify",
+    "goBackLabel": "Want to go back?",
+    "loginLinkText": "Log in here"
+  },
+  "errorMessages": {
+    "invalidCode": "Error: Invalid input",
+    "wrongCode": "Error: Incorrect credentials",
+    "serverError": "Unexpected error"
+  }
+}

@@ -15,6 +15,7 @@ logoutLink.addEventListener("click", (e) => {
       loginLink.style.display = "block";
       logoutLink.style.display = "none";
       protectImg.src = "assets/default.jpg";
+      protectImg.setAttribute("data-testid", "defaultImage");
     } else {
       alert("Failed to logout");
     }
@@ -31,14 +32,17 @@ logoutLink.addEventListener("click", (e) => {
         let img_url = data.img_url;
         if (img_url !== undefined && img_url !== null && img_url !== "") {
           protectImg.src = img_url;
+          protectImg.setAttribute("data-testid", "certificateImage");
         } else {
           protectImg.src = "assets/default.jpg";
+          protectImg.setAttribute("data-testid", "defaultImage");
         }
       });
     } else {
       loginLink.style.display = "block";
       logoutLink.style.display = "none";
       protectImg.src = "assets/default.jpg";
+      protectImg.setAttribute("data-testid", "defaultImage");
     }
   });
 })();
