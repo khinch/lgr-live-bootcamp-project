@@ -1,0 +1,19 @@
+{
+  "pageTitle": "Auth",
+  "navbar": {
+    "title": "Auth Service"
+  },
+  "loginForm": {
+    "heading": "Log in",
+    "emailPlaceholder": "Email",
+    "passwordPlaceholder": "Password",
+    "loginButtonText": "Log in",
+    "noAccountLabel": "Don't have an account?",
+    "SignUpLinkText": "Sign up here"
+  },
+  "errorMessages": {
+    "invalidCredentials": "Error: Invalid input",
+    "wrongCredentials": "Error: Incorrect credentials",
+    "serverError": "Unexpected error"
+  }
+}

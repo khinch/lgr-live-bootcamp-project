@@ -33,3 +33,9 @@ docker compose up
 ```
 
 visit http://localhost:8000 and http://localhost:3000
+
+## Configuration
+
+### Postmark
+#### Test API Key
+POSTMARK_API_TEST

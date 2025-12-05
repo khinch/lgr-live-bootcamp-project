@@ -1,0 +1,8 @@
+{
+  "pageTitle": "App",
+  "navbar": {
+    "title": "App Service",
+    "loginButton": "Log in",
+    "logoutButton": "Log out"
+  }
+}
